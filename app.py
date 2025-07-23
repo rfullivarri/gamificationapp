@@ -19,7 +19,7 @@ email_input = st.text_input("📧 Ingresá tu correo electrónico para acceder a
 if email_input:
     try:
         # Abrimos el archivo maestro de registros
-        registro_sheet = client.open("FORMULARIO INTRO – SELF‑IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
+        registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
         registros = registro_sheet.get_all_records()
 
         # Convertimos en DataFrame para filtrar
