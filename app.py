@@ -31,7 +31,8 @@ if not email_usuario:
     st.stop()
 
 # Filtramos los registros por email y tomamos el más reciente por fecha
-df_registro["Fecha"] = pd.to_datetime(df_registro["Fecha"])
+df_registro["Fecha"] = pd.to_datetime(df_registro["Fecha"], errors='coerce')
+df_registro = df_registro.dropna(subset=["Fecha"])
 filtro_usuario = df_registro[df_registro["Email"] == email_usuario]
 
 if filtro_usuario.empty:
