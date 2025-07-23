@@ -56,7 +56,7 @@ df = df.iloc[:, :5]  # Solo columnas A-E
 
 # Mostramos tabla completa sin scroll
 st.markdown("### 📋 Tabla de Base de Datos (editable)")
-edited_df = st.experimental_data_editor(df, use_container_width=True, num_rows="dynamic", key="editor")
+edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic", key="editor")
 
 # Botón de confirmación
 if st.button("✅ Confirmar edición"):
