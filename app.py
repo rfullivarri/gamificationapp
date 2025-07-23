@@ -22,7 +22,7 @@ df = pd.DataFrame(all_data[1:], columns=all_data[0])  # Encabezados en la primer
 df = df.iloc[:, :5]  # Solo columnas A hasta E
 
 # Interfaz editable
-edited_df = st.experimental_data_editor(df, num_rows="dynamic", use_container_width=True)
+edited_df = st.data_editor(df, num_rows="dynamic", use_container_width=True)
 
 # Botón de confirmación
 if st.button("✅ Confirmar edición"):
