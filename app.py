@@ -2,64 +2,78 @@ import streamlit as st
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from datetime import datetime
 
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
 
 st.title("🎮 Gamification Dashboard")
-st.write("Este es tu panel editable de inicio. Editá, eliminá o confirmá tu tabla gamificada.")
+st.write("Este es un prototipo editable conectado a tu Google Sheet.")
 
-# Configuración de credenciales
+# Autenticación con Google
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
 client = gspread.authorize(credentials)
 
-### 1. LEEMOS EL ARCHIVO DE REGISTROS DE USUARIOS
-registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
-registro_data = registro_sheet.worksheet("Registros de Usuarios").get_all_records()
+# INPUT: correo del usuario
+user_email = st.text_input("📧 Ingresá tu correo electrónico para ver tu tabla personalizada:")
 
-if not registro_data:
-    st.warning("Aún no hay registros disponibles.")
-    st.stop()
+if user_email:
+    try:
+        # Abrimos el archivo con los registros de usuarios
+        registro_sheet = client.open("FORMULARIO INTRO – SELF‑IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
+        registros = registro_sheet.get_all_records()
+        df_registro = pd.DataFrame(registros)
 
-df_registro = pd.DataFrame(registro_data)
+        # Limpieza de datos
+        df_registro["Email"] = df_registro["Email"].str.strip().str.lower()
+        user_email = user_email.strip().lower()
+        df_registro["Fecha"] = pd.to_datetime(df_registro["Fecha"], errors="coerce")
 
-# Pedimos al usuario su email
-email_usuario = st.text_input("📧 Ingresá tu correo electrónico registrado para continuar:")
+        # Mostrar tabla para debug
+        st.subheader("📋 Registros cargados:")
+        st.dataframe(df_registro)
 
-if not email_usuario:
-    st.stop()
+        # Filtrar registros por email
+        df_usuario = df_registro[df_registro["Email"] == user_email]
 
-# Filtramos los registros por email y tomamos el más reciente por fecha
-df_registro["Fecha"] = pd.to_datetime(df_registro["Fecha"], errors='coerce')
-df_registro = df_registro.dropna(subset=["Fecha"])
-filtro_usuario = df_registro[df_registro["Email"] == email_usuario]
+        if df_usuario.empty:
+            st.warning(f"No se encontró ningún registro para el correo: {user_email}")
+            st.info("Verificá que esté bien escrito, sin espacios ni mayúsculas.")
+        else:
+            registro_actual = df_usuario.sort_values("Fecha", ascending=False).iloc[0]
+            sheet_url = registro_actual["GoogleSheetID"]
 
-if filtro_usuario.empty:
-    st.error("No se encontraron registros para ese email.")
-    st.stop()
+            if not sheet_url or "docs.google.com" not in sheet_url:
+                st.error("⚠️ El campo 'GoogleSheetID' está vacío o mal formateado.")
+            else:
+                try:
+                    # Extraer ID del Google Sheet
+                    sheet_id = sheet_url.split("/d/")[1].split("/")[0]
+                    sheet = client.open_by_key(sheet_id).worksheet("BBDD")
 
-registro_reciente = filtro_usuario.sort_values("Fecha", ascending=False).iloc[0]
-sheet_id_usuario = registro_reciente["GoogleSheetID"]
+                    # Leer tabla hasta la columna E
+                    all_data = sheet.get_all_values()
+                    df = pd.DataFrame(all_data[1:], columns=all_data[0])
+                    df = df.iloc[:, :5]  # Solo columnas A hasta E
 
-### 2. ACCEDEMOS AL SHEET PERSONALIZADO
-try:
-    sheet_usuario = client.open_by_key(sheet_id_usuario).worksheet("BBDD")
-except Exception as e:
-    st.error(f"No se pudo acceder al Sheet del usuario: {e}")
-    st.stop()
+                    # Interfaz editable completa
+                    st.subheader("📝 Editá tu tabla personalizada:")
+                    edited_df = st.data_editor(
+                        df,
+                        use_container_width=True,
+                        num_rows="dynamic",
+                        hide_index=True,
+                        key="editor"
+                    )
 
-# Cargamos los datos y mostramos solo hasta columna E
-raw_data = sheet_usuario.get_all_values()
-df = pd.DataFrame(raw_data[1:], columns=raw_data[0])  # Encabezados en la fila 1
-df = df.iloc[:, :5]  # Solo columnas A-E
+                    # Botón de confirmación
+                    if st.button("✅ Confirmar edición"):
+                        st.success("Datos confirmados. ¡Próximo paso: generación del formulario de seguimiento diario!")
+                        # 🔜 Enviar señal a Google Sheets (script aún pendiente de integración)
 
-# Mostramos tabla completa sin scroll
-st.markdown("### 📋 Tabla de Base de Datos (editable)")
-#edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic", key="editor")
-edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic", key="editor", height=None)
+                except Exception as e:
+                    st.error("❌ No se pudo acceder al archivo vinculado.")
+                    st.exception(e)
 
-# Botón de confirmación
-if st.button("✅ Confirmar edición"):
-    st.success("Datos confirmados. Próximamente se generará tu formulario de seguimiento diario.")
-    # 🚀 En el siguiente paso, se disparará un Apps Script en Google Sheets
+    except Exception as e:
+        st.error("❌ No se pudo abrir la hoja de registros de usuarios.")
+        st.exception(e)
