@@ -19,7 +19,7 @@ user_email = st.text_input("📧 Ingresá tu correo electrónico para ver tu tab
 if user_email:
     try:
         # Abrimos el archivo con los registros de usuarios
-        registro_sheet = client.open("FORMULARIO INTRO – SELF‑IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
+        registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
         registros = registro_sheet.get_all_records()
         df_registro = pd.DataFrame(registros)
 
