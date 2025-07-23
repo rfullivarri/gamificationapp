@@ -15,7 +15,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["googl
 client = gspread.authorize(credentials)
 
 ### 1. LEEMOS EL ARCHIVO DE REGISTROS DE USUARIOS
-registro_sheet = client.open("FORMULARIO INTRO – SELF‑IMPROVEMENT JOURNEY (respuestas)")
+registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
 registro_data = registro_sheet.worksheet("Registros de Usuarios").get_all_records()
 
 if not registro_data:
