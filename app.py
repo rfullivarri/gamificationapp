@@ -36,7 +36,7 @@ if email_input:
         client = gspread.authorize(credentials)
 
         # Abrir hoja de registros de usuario
-        registro_sheet = client.open("FORMULARIO INTRO – SELF‑IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
+        registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
         registros = registro_sheet.get_all_records()
         df_registro = pd.DataFrame(registros)
 
