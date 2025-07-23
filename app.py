@@ -22,7 +22,7 @@ user_email = st.text_input("📧 Ingresá tu correo electrónico para continuar"
 if user_email:
     try:
         # 🧾 Abrir archivo maestro de registros
-        registro_sheet = client.open("FORMULARIO INTRO – SELF‑IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
+        registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
         registros = registro_sheet.get_all_records()
         df_registro = pd.DataFrame(registros)
 
