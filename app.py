@@ -10,7 +10,7 @@ st.write("Este es un prototipo conectado con tu Google Sheet.")
 
 # Conexión al Google Sheet
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
 client = gspread.authorize(credentials)
 
 sheet = client.open("Gamification v1 (Plantilla)").worksheet("BBDD")
