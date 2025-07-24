@@ -5,6 +5,21 @@ import gspread
 import requests
 from oauth2client.service_account import ServiceAccountCredentials
 
+def enviar_formulario_bobo(email_usuario):
+    url_formulario = "https://docs.google.com/forms/d/e/1FAIpQLSfPVg9FFp1MbsuSTMKwOdDj3TfbFSj8A_cX7ESAwE02UrVvbA/formResponse"
+    entry_id = "entry.1543000384"
+    
+    data = {
+        entry_id: email_usuario
+    }
+
+    response = requests.post(url_formulario, data=data)
+    
+    if response.status_code in [200, 302]:
+        print("✅ Formulario enviado correctamente.")
+    else:
+        print(f"❌ Error al enviar formulario: {response.status_code}")
+
 # Configuración general
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
 st.title("🎮 Gamification Dashboard")
@@ -115,17 +130,4 @@ if email_input:
     except Exception as e:
         st.error(f"⚠️ Error al cargar los datos: {e}")
 
-def enviar_formulario_bobo(email_usuario):
-    url_formulario = "https://docs.google.com/forms/d/e/1FAIpQLSfPVg9FFp1MbsuSTMKwOdDj3TfbFSj8A_cX7ESAwE02UrVvbA/formResponse"
-    entry_id = "entry.1543000384"
-    
-    data = {
-        entry_id: email_usuario
-    }
 
-    response = requests.post(url_formulario, data=data)
-    
-    if response.status_code in [200, 302]:
-        print("✅ Formulario enviado correctamente.")
-    else:
-        print(f"❌ Error al enviar formulario: {response.status_code}")
