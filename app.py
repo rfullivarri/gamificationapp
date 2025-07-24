@@ -56,14 +56,12 @@ if email_input:
             df = pd.DataFrame(all_data[1:], columns=all_data[0])
             df = df.iloc[:, :5]  # Mostrar solo A-E
 
-            # 🎨 Aplicar estilo zebra
-            def zebra_style(df):
-                return df.style.apply(lambda x: ['background-color: #f9f9f9' if i % 2 == 0 else '' for i in range(len(x))], axis=0)
+            # Editor interactivo para modificar (solo esta tabla se muestra)
+            st.markdown("""
+            <div style="background-color:#f7f7f7; padding:20px; border-radius:10px; border: 1px solid #e0e0e0; margin-top:20px; margin-bottom:20px;">
+            <h4 style="margin-top: 0;">🧾 Tu tabla de tasks:</h4>
+            """, unsafe_allow_html=True)
 
-            st.markdown("### 🧾 Tu tabla de tasks:")
-            st.dataframe(zebra_style(df), use_container_width=True)
-
-            # Editor interactivo para modificar
             edited_df = st.data_editor(
                 df,
                 use_container_width=True,
@@ -71,6 +69,7 @@ if email_input:
                 key="editor",
                 hide_index=True
             )
+            st.markdown("</div>", unsafe_allow_html=True)
 
             if st.button("✅ Confirmar edición"):
                 new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
