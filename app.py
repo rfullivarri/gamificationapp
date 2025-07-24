@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import requests
 from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuración general
@@ -75,6 +76,7 @@ if email_input:
             # Botón para guardar cambios
             if st.button("✅ Confirmar edición"):
                 try:
+                    # Guardar la nueva tabla (solo A:E)
                     new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
                     num_rows = len(new_data)
                     rango = f"A1:E{num_rows}"
@@ -86,9 +88,22 @@ if email_input:
 
                     st.success("✅ Cambios guardados correctamente (sin tocar otras columnas).")
 
+                    # 🔁 Confirmación en "Registros de Usuarios" vía WebApp
+                    webhook_url = "https://script.google.com/macros/s/AKfycbw2k7nD1ugEXIihy0PfZn7vDq0s_sLAML0W37P3OJcZDSRFoh_fLQPPG35SNLafnPWG4Q/exec"
+                    token = "GAMIFY_ME_2025"
+
+                    response = requests.post(webhook_url, data={
+                        "email": email_input.strip(),
+                        "token": token
+                    })
+
+                    if response.status_code == 200 and "✅" in response.text:
+                        st.success("📬 Confirmación enviada correctamente.")
+                    else:
+                        st.warning(f"⚠️ Algo salió mal al confirmar: {response.text}")
+
                 except Exception as e:
-                    st.error(f"❌ Error al guardar: {e}")
+                    st.error(f"❌ Error al guardar o confirmar: {e}")
 
     except Exception as e:
         st.error(f"⚠️ Error al cargar los datos: {e}")
-
