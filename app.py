@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import gspread
-import requests
 from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuración general
@@ -86,19 +85,22 @@ if email_input:
                         "values": new_data
                     }])
 
-                    st.success("✅ Cambios guardados correctamente (sin tocar otras columnas).")
+                    st.success("✅ Cambios guardados correctamente.")
 
                     # ✅ Confirmar en el archivo de registros directamente
                     try:
                         registros_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
                         registros_data = registros_sheet.get_all_values()
 
-                        for idx, fila in enumerate(registros_data[1:], start=2):  # salteamos encabezado
+                        encontrado = False
+                        for idx, fila in enumerate(registros_data[1:], start=2):  # Saltear encabezado
                             if fila[0].strip().lower() == email_input.strip().lower():
                                 registros_sheet.update_cell(idx, 6, "OK")  # Columna F = Confirmación BBDD
                                 st.success("📬 Confirmación registrada correctamente en Registros de Usuarios.")
-                            break
-                        else:
+                                encontrado = True
+                                break
+
+                        if not encontrado:
                             st.warning("⚠️ No se encontró el correo en Registros de Usuarios.")
 
                     except Exception as e:
