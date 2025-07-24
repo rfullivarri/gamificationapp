@@ -72,12 +72,21 @@ if email_input:
             st.markdown("</div>", unsafe_allow_html=True)
 
             if st.button("✅ Confirmar edición"):
-                new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
-                sheet.clear()
-                sheet.update("A1", new_data)
+                try:
+                    # Preparamos solo las columnas A-E
+                    new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
+                    num_rows = len(new_data)
 
-                st.success("✅ Cambios guardados correctamente.")
-                # (Aquí se disparará el script del Google Form)
+                    # Solo actualizamos el rango A:E
+                    rango = f"A1:E{num_rows}"
+                    sheet.batch_update([{
+                        "range": rango,
+                        "values": new_data
+                    }])
 
-    except Exception as e:
-        st.error(f"⚠️ Error: {e}")
+                    st.success("✅ Cambios guardados correctamente (sin tocar otras columnas).")
+
+                except Exception as e:
+                    st.error(f"❌ Error al guardar: {e}")
+
+
