@@ -88,19 +88,21 @@ if email_input:
 
                     st.success("✅ Cambios guardados correctamente (sin tocar otras columnas).")
 
-                    # 🔁 Confirmación en "Registros de Usuarios" vía WebApp
-                    webhook_url = "https://script.google.com/macros/s/AKfycbw2k7nD1ugEXIihy0PfZn7vDq0s_sLAML0W37P3OJcZDSRFoh_fLQPPG35SNLafnPWG4Q/exec"
-                    token = "GAMIFY_ME_2025"
+                    # ✅ Confirmar en el archivo de registros directamente
+                    try:
+                        registros_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
+                        registros_data = registros_sheet.get_all_values()
 
-                    response = requests.post(webhook_url, data={
-                        "email": email_input.strip(),
-                        "token": token
-                    })
+                        for idx, fila in enumerate(registros_data[1:], start=2):  # salteamos encabezado
+                            if fila[0].strip().lower() == email_input.strip().lower():
+                                registros_sheet.update_cell(idx, 6, "OK")  # Columna F = Confirmación BBDD
+                                st.success("📬 Confirmación registrada correctamente en Registros de Usuarios.")
+                            break
+                        else:
+                            st.warning("⚠️ No se encontró el correo en Registros de Usuarios.")
 
-                    if response.status_code == 200 and "✅" in response.text:
-                        st.success("📬 Confirmación enviada correctamente.")
-                    else:
-                        st.warning(f"⚠️ Algo salió mal al confirmar: {response.text}")
+                    except Exception as e:
+                        st.error(f"❌ Error al confirmar en Registros de Usuarios: {e}")
 
                 except Exception as e:
                     st.error(f"❌ Error al guardar o confirmar: {e}")
