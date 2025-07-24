@@ -95,7 +95,7 @@ if email_input:
                         encontrado = False
                         for idx, fila in enumerate(registros_data[1:], start=2):  # Saltear encabezado
                             if fila[0].strip().lower() == email_input.strip().lower():
-                                registros_sheet.update_cell(idx, 6, "OK")  # Columna F = Confirmación BBDD
+                                registros_sheet.update_cell(idx, 6, "SI")  # Columna F = Confirmación BBDD
                                 st.success("📬 Confirmación registrada correctamente en Registros de Usuarios.")
                                 encontrado = True
                                 break
