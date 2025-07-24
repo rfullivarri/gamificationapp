@@ -9,13 +9,13 @@ st.title("🎮 Gamification Dashboard")
 
 # ✨ Mensaje gamer motivador
 st.markdown("""
-> 🛠️ **Revisa tu tabla de tasks:**  
+> 🛠️ **Revisá tu tabla de tasks:**  
 > Pulí tus misiones diarias. Editá, reemplazá o eliminá lo que no te sirva.  
 > Solo vos sabés qué quests te acercan a tu mejor versión.  
 > ¡Hacé que cada task valga XP real! 💪
 """)
 
-# 📝 Nota estilo Notion (disclaimer visual)
+# 📝 Nota estilo Notion
 st.markdown("""
 <div style="background-color:#f0f0f0; padding:15px; border-radius:8px; border-left:4px solid #999">
 <b>📌 IMPORTANTE – Cómo deben ser tus Tasks</b><br>
@@ -54,9 +54,9 @@ if email_input:
 
             all_data = sheet.get_all_values()
             df = pd.DataFrame(all_data[1:], columns=all_data[0])
-            df = df.iloc[:, :5]  # Mostrar solo A-E
+            df = df.iloc[:, :5]  # Mostrar solo columnas A-E
 
-            # Editor interactivo para modificar (solo esta tabla se muestra)
+            # Contenedor visual con fondo gris
             st.markdown("""
             <div style="background-color:#f7f7f7; padding:20px; border-radius:10px; border: 1px solid #e0e0e0; margin-top:20px; margin-bottom:20px;">
             <h4 style="margin-top: 0;">🧾 Tu tabla de tasks:</h4>
@@ -69,16 +69,16 @@ if email_input:
                 key="editor",
                 hide_index=True
             )
+
             st.markdown("</div>", unsafe_allow_html=True)
 
+            # Botón para guardar cambios
             if st.button("✅ Confirmar edición"):
                 try:
-                    # Preparamos solo las columnas A-E
                     new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
                     num_rows = len(new_data)
-
-                    # Solo actualizamos el rango A:E
                     rango = f"A1:E{num_rows}"
+
                     sheet.batch_update([{
                         "range": rango,
                         "values": new_data
@@ -89,4 +89,6 @@ if email_input:
                 except Exception as e:
                     st.error(f"❌ Error al guardar: {e}")
 
+    except Exception as e:
+        st.error(f"⚠️ Error al cargar los datos: {e}")
 
