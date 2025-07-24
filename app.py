@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import requests
 from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuración general
@@ -96,6 +97,21 @@ if email_input:
                         for idx, fila in enumerate(registros_data[1:], start=2):  # Saltear encabezado
                             if fila[0].strip().lower() == email_input.strip().lower():
                                 registros_sheet.update_cell(idx, 6, "SI")  # Columna F = Confirmación BBDD
+                                # 🔁 Llamada al WebApp para crear el Daily Form
+                                webapp_url = "https://script.google.com/macros/s/AKfycbzje0wco71mNea1v2WClcpQkvz0Ep3ZIJ8guBONQLvI3G3AXxfpdH0ECaCNMbHHcyJ3Gw/exec"
+                                params = {
+                                    "action": "crearDailyForm",
+                                    "sheetId": sheet_id,
+                                    "email": email_input
+                                }
+                                try:
+                                    response = requests.post(webapp_url, data=params)
+                                    st.success("✅ Formulario diario solicitado correctamente.")
+                                    st.write(response.text)
+                                except Exception as e:
+                                    st.error("❌ Hubo un error al crear el formulario diario.")
+                                    st.write(e)
+                                    
                                 st.success("📬 Confirmación registrada correctamente en Registros de Usuarios.")
                                 encontrado = True
                                 break
