@@ -102,7 +102,7 @@ if email_input:
                                 webapp_url = "https://script.google.com/macros/s/AKfycbzje0wco71mNea1v2WClcpQkvz0Ep3ZIJ8guBONQLvI3G3AXxfpdH0ECaCNMbHHcyJ3Gw/exec"
                                 params = {
                                     "action": "crearDailyForm",
-                                    "sheetId": sheet_id,
+                                    "spreadsheetId": sheet_id,
                                     "email": email_input
                                 }
                                 try:
