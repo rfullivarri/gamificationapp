@@ -1,3 +1,4 @@
+import json
 import streamlit as st
 import pandas as pd
 import gspread
@@ -105,7 +106,8 @@ if email_input:
                                     "email": email_input
                                 }
                                 try:
-                                    response = requests.post(webapp_url, data=params)
+                                    headers = {"Content-Type": "application/json"}
+                                    response = requests.post(webapp_url, headers=headers, data=json.dumps(params))
                                     st.success("✅ Formulario diario solicitado correctamente.")
                                     st.write(response.text)
                                 except Exception as e:
