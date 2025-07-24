@@ -3,21 +3,29 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Configuración general de la app
+# Configuración general
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
 st.title("🎮 Gamification Dashboard")
-st.markdown("""
-📌 **IMPORTANTE – Cómo deben ser tus Tasks**  
-- Deben poder completarse en un día.  
-- Que sean concretas, claras y medibles.  
-- No uses tareas vagas como "cuidarme más" → Mejor: "Preparar una comida saludable".  
-- Ideal que puedan repetirse cada semana.
 
-✍️ **Ejemplos correctos:**  
-- Leer 5 páginas de un libro  
-- Meditar 10 minutos  
-- Preparar vianda para mañana  
+# ✨ Mensaje gamer motivador
+st.markdown("""
+> 🛠️ **Revisa tu tabla de tasks:**  
+> Pulí tus misiones diarias. Editá, reemplazá o eliminá lo que no te sirva.  
+> Solo vos sabés qué quests te acercan a tu mejor versión.  
+> ¡Hacé que cada task valga XP real! 💪
 """)
+
+# 📝 Nota estilo Notion (disclaimer visual)
+st.markdown("""
+<div style="background-color:#f0f0f0; padding:15px; border-radius:8px; border-left:4px solid #999">
+<b>📌 IMPORTANTE – Cómo deben ser tus Tasks</b><br>
+✔️ Que puedas completarlas en un solo día.<br>
+✔️ Deben ser claras, específicas y medibles.<br>
+🚫 No uses frases vagas como “hacer algo saludable”.<br>
+🎯 Mejor: “Preparar una comida saludable” o “Meditar 10 minutos”.<br>
+♻️ Ideal si podés repetirlas cada semana.
+</div>
+""", unsafe_allow_html=True)
 
 # Conexión a Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -29,28 +37,33 @@ email_input = st.text_input("📧 Ingresá tu correo electrónico para acceder a
 
 if email_input:
     try:
-        # Accedemos al registro de usuarios
+        # Acceso al registro de usuarios
         registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
         registros = registro_sheet.get_all_records()
         df_registro = pd.DataFrame(registros)
 
-        # Buscamos el mail
         fila_usuario = df_registro[df_registro["Email"].str.strip().str.lower() == email_input.strip().lower()]
 
         if fila_usuario.empty:
             st.error("❌ No se encontró ninguna base de datos asociada a este correo.")
         else:
-            # URL del Sheet
+            # Cargar datos del usuario
             sheet_url = fila_usuario.iloc[0]["GoogleSheetID"]
             sheet_id = sheet_url.split("/d/")[1].split("/")[0]
             sheet = client.open_by_key(sheet_id).worksheet("BBDD")
 
-            # Datos de la BBDD
             all_data = sheet.get_all_values()
             df = pd.DataFrame(all_data[1:], columns=all_data[0])
-            df = df.iloc[:, :5]  # A-E: Pilar, Rasgo, Stat, Task, Dificultad
+            df = df.iloc[:, :5]  # Mostrar solo A-E
 
-            # Mostrar tabla editable
+            # 🎨 Aplicar estilo zebra
+            def zebra_style(df):
+                return df.style.apply(lambda x: ['background-color: #f9f9f9' if i % 2 == 0 else '' for i in range(len(x))], axis=0)
+
+            st.markdown("### 🧾 Tu tabla de tasks:")
+            st.dataframe(zebra_style(df), use_container_width=True)
+
+            # Editor interactivo para modificar
             edited_df = st.data_editor(
                 df,
                 use_container_width=True,
@@ -59,16 +72,13 @@ if email_input:
                 hide_index=True
             )
 
-            # Botón para guardar cambios y lanzar script
             if st.button("✅ Confirmar edición"):
-                # Guardar cambios en la hoja
                 new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
                 sheet.clear()
                 sheet.update("A1", new_data)
 
                 st.success("✅ Cambios guardados correctamente.")
-                # 🔜 Aquí vamos a ejecutar el script de creación de Google Form
-                # (Lo agregamos en el próximo paso)
+                # (Aquí se disparará el script del Google Form)
 
     except Exception as e:
         st.error(f"⚠️ Error: {e}")
