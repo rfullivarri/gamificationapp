@@ -36,13 +36,14 @@ if email:
         # ------------------- LAYOUT A TRES COLUMNAS -------------------
         col1, col2, col3 = st.columns([1, 2, 1])
 
-        # 📊 Info lateral izquierda
+        # 📊 COLUMNA 1 -------------------------------------
         with col1:
             
             # 🎯 Avatar
             # Subida de imagen personalizada
             #st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
-
+            
+            st.image(avatar_path,width=150)
             avatar_file = st.file_uploader(" ", type=["jpg", "jpeg", "png"])
             if avatar_file:
                 # Guardar temporalmente en un subfolder en Streamlit Cloud
@@ -51,7 +52,8 @@ if email:
                 with open(avatar_path, "wb") as f:
                     f.write(avatar_file.read())
 
-                st.image(avatar_path)      
+                #st.image(avatar_path,width=150)
+            
 
                 # 🚀 ACTUALIZAR URL en GSheet
                 public_url = f"https://example.com/{avatar_path}"  # Cambiar si tenés hosting
@@ -66,7 +68,7 @@ if email:
             st.progress(0.40, text="🧠 Focus")
 
 
-        
+        #COLUMNA 2---------------------------------------------
         with col2:
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "CP"]].copy()
@@ -79,16 +81,19 @@ if email:
             else:
                 st.warning("No hay datos para el radar chart.")
 
+        
+       #COLUMNA 3---------------------------------
         with col3:
+            st.subheader(f"🏆**Total XP:** {xp_total}")
             st.subheader("🎯 Nivel actual")
             st.markdown(f"""
-                <div style='text-align: center; font-size: 60px; font-weight: bold; color: #4B4B4B;'>
+                <div style='text-align: center; font-size: 50px; font-weight: bold; color: #4B4B4B;'>
                     {nivel_actual}
                 </div>
             """, unsafe_allow_html=True)
             st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
 
-            st.subheader(f"🏆**Total EXP:** {xp_total}")            
+                        
 
         # 📋 Tabla resumen
         st.markdown("---")
