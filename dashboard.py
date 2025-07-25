@@ -10,7 +10,7 @@ st.title("🧠 Self-Improvement Dashboard")
 email = st.text_input("📧 Ingresá tu correo electrónico")
 
 if email:
-    bbdd, daily_log, setup, acumulados_subconjunto = get_gamification_data(email)
+    bbdd, daily_log, setup, acumulados_subconjunto, *_ = get_gamification_data(email)
 
     if bbdd is not None:
         st.success("✅ Base cargada correctamente")
