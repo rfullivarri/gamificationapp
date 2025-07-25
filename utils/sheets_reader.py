@@ -1,6 +1,7 @@
 import gspread
 import pandas as pd
 import re
+from google.oauth2.service_account import Credentials
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
@@ -18,10 +19,8 @@ def get_gamification_data(email):
     fila = next((r for r in registros if r["Email"] == email), None)
     if not fila:
         return None
+        
 def update_avatar_url(email, url):
-    import gspread
-    from google.oauth2.service_account import Credentials
-
     creds = Credentials.from_service_account_info(st.secrets["google_service_account"])
     client = gspread.authorize(creds)
 
