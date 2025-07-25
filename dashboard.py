@@ -34,28 +34,27 @@ if email:
         # ------------------- LAYOUT A TRES COLUMNAS -------------------
         col1, col2, col3 = st.columns([1, 2, 1])
 
-        # 📊 COLUMNA 1 -------------------------------------
+         # 📊 COLUMNA 1 -------------------------------------
         with col1:
-            # 🎯 Avatar
-            # Subida de imagen personalizada
-            
-            st.image(avatar_url,width=150)
-            avatar_file = st.file_uploader(" ", type=["jpg", "jpeg", "png"])
-            if avatar_file:
-                # Guardar temporalmente en un subfolder en Streamlit Cloud
-                file_extension = avatar_file.name.split(".")[-1]
-                avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
-                with open(avatar_path, "wb") as f:
-                    f.write(avatar_file.read())
+            st.markdown("### 🧙‍♂️ Tu Avatar")
 
-                st.image(avatar_path,width=150)
-            
+            # Mostrar el avatar actual o por defecto
+            st.image(avatar_url, width=200)
 
-                # 🚀 ACTUALIZAR URL en GSheet
-                public_url = f"https://example.com/{avatar_path}"  # Cambiar si tenés hosting
-                update_avatar_url(email, public_url)
-                #st.success("✅ Avatar actualizado en la base")
+            # Colapsable para subir avatar solo si el usuario quiere
+            with st.expander("📤 Subir / Cambiar Avatar"):
+                avatar_file = st.file_uploader("Elegí tu imagen", type=["jpg", "jpeg", "png"])
+                if avatar_file:
+                    file_extension = avatar_file.name.split(".")[-1]
+                    avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
+                    with open(avatar_path, "wb") as f:
+                        f.write(avatar_file.read())
+                    st.image(avatar_path, caption="Nuevo avatar cargado", width=200)
 
+                    # 🚀 Actualizar URL (reemplazar por hosting real si tenés)
+                    public_url = f"https://example.com/{avatar_path}"
+                    update_avatar_url(email, public_url)
+                    st.success("✅ Avatar actualizado con éxito.")
 
             # 💠 Estado diario
             st.subheader("💠 Estado diario")
