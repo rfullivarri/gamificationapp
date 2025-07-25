@@ -36,18 +36,30 @@ if email:
 
          # 📊 COLUMNA 1 -------------------------------------
         with col1:
-            st.image(avatar_url, width=250)
+            # Si hay imagen previa o subida, mostrarla (sin título, sin caption)
+            if avatar_url or "avatar_path" in locals():
+                st.image(avatar_url, width=200)
 
-            avatar_file = st.file_uploader("", type=["jpg", "jpeg", "png"],width=100)
+            # Input silencioso para cambiar imagen (solo el botón, sin nada más)
+            avatar_file = st.file_uploader(
+                label=" ",
+                type=["jpg", "jpeg", "png"],
+                label_visibility="collapsed"
+            )
+
+            # Si se carga una nueva imagen
             if avatar_file:
-                    file_extension = avatar_file.name.split(".")[-1]
-                    avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
-                    with open(avatar_path, "wb") as f:
-                        f.write(avatar_file.read())
-                    st.image(avatar_path, width=200)
+                file_extension = avatar_file.name.split(".")[-1]
+                avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
+                with open(avatar_path, "wb") as f:
+                    f.write(avatar_file.read())
 
-                    public_url = f"https://example.com/{avatar_path}"
-                    update_avatar_url(email, public_url)
+                # Mostrar la nueva imagen arriba, reemplazando la anterior
+                st.image(avatar_path, width=200)
+
+                # Actualizar avatar_url para que se mantenga
+                avatar_url = f"https://example.com/{avatar_path}"
+                update_avatar_url(email, avatar_url)
 
             # 💠 Estado diario
             st.subheader("💠 Estado diario")
