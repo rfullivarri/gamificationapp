@@ -26,7 +26,7 @@ def update_avatar_url(email, url):
     client = gspread.authorize(creds)
 
     # Abre el archivo central
-    sheet = client.open("FORMULARIO INTRO – SELF IMPROVEMENT JOURNEY (respuestas)")
+    sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
     tab = sheet.worksheet("Registros de Usuarios")
 
     data = tab.get_all_values()
