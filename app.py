@@ -110,9 +110,14 @@ if email_input:
 
                         encontrado = False
                         for idx, fila in enumerate(registros_data[1:], start=2):  # Saltear encabezado
-                            if fila[0].strip().lower() == email_input.strip().lower():
-                                registros_sheet.update_cell(idx, 6, "SI")  # Columna F = Confirmación BBDD
-                                registros_sheet.update_cell(idx, 7, email_input)  # Columna G: email confirmado
+                            correo_col_a = fila[0].strip().lower()
+                            if correo_col_a == email_input.strip().lower():
+                                # ✍️ Guardar el correo en columna G (índice 7)
+                                registros_sheet.update_cell(idx, 7, email_input)
+
+                                # ✅ Confirmar la BBDD en columna F (índice 6)
+                                registros_sheet.update_cell(idx, 6, "SI")
+
                                 enviar_formulario_bobo(email_input)
                                 st.success("📬 Confirmación registrada correctamente en Registros de Usuarios.")
                                 encontrado = True
