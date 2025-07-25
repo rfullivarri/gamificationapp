@@ -6,19 +6,18 @@ import requests
 from oauth2client.service_account import ServiceAccountCredentials
 
 def enviar_formulario_bobo(email_usuario):
-    url_formulario = "https://docs.google.com/forms/d/e/1FAIpQLSfPVg9FFp1MbsuSTMKwOdDj3TfbFSj8A_cX7ESAwE02UrVvbA/formResponse"
-    entry_id = "entry.1543000384"
+    url_formulario = "https://docs.google.com/forms/d/e/1FAIpQLScS9L8mDIa934tEhkmnq0O7LhVat-9mrL6O6GOec-7JlK7tXQ/formResponse"
     
     data = {
-        entry_id: email_usuario
+        "entry.1871872872": "Sí"  # Marcamos el checkbox de forma automática
     }
 
     response = requests.post(url_formulario, data=data)
     
     if response.status_code in [200, 302]:
-        print("✅ Formulario enviado correctamente.")
+        print("✅ Formulario BOBO enviado correctamente.")
     else:
-        print(f"❌ Error al enviar formulario: {response.status_code}")
+        print(f"❌ Error al enviar formulario BOBO: {response.status_code}")
 
 # Configuración general
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
