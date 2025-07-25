@@ -13,9 +13,7 @@ st.title("🧠 Self-Improvement Dashboard")
 # 📩 Input de correo
 email = st.text_input("📧 Ingresá tu correo electrónico")
 
-
-
-
+#------------------------------------------------------------------------
 
 if email:
     data = get_gamification_data(email)
@@ -38,12 +36,10 @@ if email:
 
         # 📊 COLUMNA 1 -------------------------------------
         with col1:
-            
             # 🎯 Avatar
             # Subida de imagen personalizada
-            #st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
             
-            st.image(avatar_path,width=150)
+            st.image(avatar_url,width=150)
             avatar_file = st.file_uploader(" ", type=["jpg", "jpeg", "png"])
             if avatar_file:
                 # Guardar temporalmente en un subfolder en Streamlit Cloud
