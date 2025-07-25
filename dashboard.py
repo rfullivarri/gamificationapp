@@ -48,7 +48,7 @@ if email:
                 with open(avatar_path, "wb") as f:
                     f.write(avatar_file.read())
 
-                #st.image(avatar_path,width=150)
+                st.image(avatar_path,width=150)
             
 
                 # 🚀 ACTUALIZAR URL en GSheet
