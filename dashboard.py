@@ -38,38 +38,28 @@ if email:
 
         # 📊 Info lateral izquierda
         with col1:
-            st.subheader("🎯 Nivel actual")
-            st.markdown(f"""
-                <div style='text-align: center; font-size: 60px; font-weight: bold; color: #4B4B4B;'>
-                    {nivel_actual}
-                </div>
-            """, unsafe_allow_html=True)
-            st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
-
+            
             # 🎯 Avatar
             # Subida de imagen personalizada
             #st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
+                # Subir a algún hosting (opcional, si usás algo como Cloudinary, Imgur API, etc.)
+                # Por ahora, mostramos localmente (en modo local servirá)
+            st.image(avatar_path, caption="Tu nuevo avatar")
 
-            avatar_file = st.file_uploader("Subí tu imagen (JPG o PNG)", type=["jpg", "jpeg", "png"])
+                # 🚀 ACTUALIZAR URL en GSheet
+                # Si estás trabajando en local, asumimos que vas a hostear las imágenes manualmente
+                # Alternativa mínima: usar Imgur o Drive compartido con link público
+                # Por ahora: mostramos el path temporal
+            public_url = f"https://example.com/{avatar_path}"  # Cambiar si tenés hosting
+            update_avatar_url(email, public_url)
+                # st.success("✅ Avatar actualizado en la base")
+            avatar_file = st.file_uploader(" ", type=["jpg", "jpeg", "png"])
             if avatar_file:
                 # Guardar temporalmente en un subfolder en Streamlit Cloud
                 file_extension = avatar_file.name.split(".")[-1]
                 avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
                 with open(avatar_path, "wb") as f:
                     f.write(avatar_file.read())
-
-                # Subir a algún hosting (opcional, si usás algo como Cloudinary, Imgur API, etc.)
-                # Por ahora, mostramos localmente (en modo local servirá)
-                st.image(avatar_path, caption="Tu nuevo avatar")
-
-                # 🚀 ACTUALIZAR URL en GSheet
-                # Si estás trabajando en local, asumimos que vas a hostear las imágenes manualmente
-                # Alternativa mínima: usar Imgur o Drive compartido con link público
-                # Por ahora: mostramos el path temporal
-                public_url = f"https://example.com/{avatar_path}"  # Cambiar si tenés hosting
-                update_avatar_url(email, public_url)
-                # st.success("✅ Avatar actualizado en la base")
-
 
 
             # 💠 Estado diario
@@ -78,6 +68,8 @@ if email:
             st.progress(0.60, text="🏵️ Mood")
             st.progress(0.40, text="🧠 Focus")
 
+
+        
         with col2:
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "CP"]].copy()
@@ -91,6 +83,14 @@ if email:
                 st.warning("No hay datos para el radar chart.")
 
         with col3:
+            st.subheader("🎯 Nivel actual")
+            st.markdown(f"""
+                <div style='text-align: center; font-size: 60px; font-weight: bold; color: #4B4B4B;'>
+                    {nivel_actual}
+                </div>
+            """, unsafe_allow_html=True)
+            st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
+
             st.subheader(f"🏆**Total EXP:** {xp_total}")            
 
         # 📋 Tabla resumen
