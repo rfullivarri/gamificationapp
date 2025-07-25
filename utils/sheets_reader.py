@@ -18,7 +18,23 @@ def get_gamification_data(email):
     fila = next((r for r in registros if r["Email"] == email), None)
     if not fila:
         return None
+def update_avatar_url(email, url):
+    import gspread
+    from google.oauth2.service_account import Credentials
 
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"])
+    client = gspread.authorize(creds)
+
+    # Abre el archivo central
+    sheet = client.open("FORMULARIO INTRO – SELF IMPROVEMENT JOURNEY (respuestas)")
+    tab = sheet.worksheet("Registros de Usuarios")
+
+    data = tab.get_all_values()
+    for idx, row in enumerate(data):
+        if row and row[0].strip().lower() == email.strip().lower():
+            tab.update_cell(idx + 1, 9, url)  # Columna I = 9
+            break
+    
     # Acceder al archivo del usuario
     spreadsheet_url = fila["GoogleSheetID"]
     match = re.search(r'/d/([a-zA-Z0-9-_]+)', spreadsheet_url)
