@@ -14,28 +14,7 @@ st.title("🧠 Self-Improvement Dashboard")
 email = st.text_input("📧 Ingresá tu correo electrónico")
 
 
-# Subida de imagen personalizada
-st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
 
-avatar_file = st.file_uploader("Subí tu imagen (JPG o PNG)", type=["jpg", "jpeg", "png"])
-if avatar_file:
-    # Guardar temporalmente en un subfolder en Streamlit Cloud
-    file_extension = avatar_file.name.split(".")[-1]
-    avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
-    with open(avatar_path, "wb") as f:
-        f.write(avatar_file.read())
-
-    # Subir a algún hosting (opcional, si usás algo como Cloudinary, Imgur API, etc.)
-    # Por ahora, mostramos localmente (en modo local servirá)
-    st.image(avatar_path, caption="Tu nuevo avatar")
-
-    # 🚀 ACTUALIZAR URL en GSheet
-    # Si estás trabajando en local, asumimos que vas a hostear las imágenes manualmente
-    # Alternativa mínima: usar Imgur o Drive compartido con link público
-    # Por ahora: mostramos el path temporal
-    public_url = f"https://example.com/{avatar_path}"  # Cambiar si tenés hosting
-    update_avatar_url(email, public_url)
-    st.success("✅ Avatar actualizado en la base")
 
 
 if email:
@@ -68,8 +47,33 @@ if email:
             st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
 
             # 🎯 Avatar
-            st.image(avatar_url, caption="Tu avatar", use_column_width=True)
+            # Subida de imagen personalizada
+            st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
 
+            avatar_file = st.file_uploader("Subí tu imagen (JPG o PNG)", type=["jpg", "jpeg", "png"])
+            if avatar_file:
+                # Guardar temporalmente en un subfolder en Streamlit Cloud
+                file_extension = avatar_file.name.split(".")[-1]
+                avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
+                with open(avatar_path, "wb") as f:
+                    f.write(avatar_file.read())
+
+                # Subir a algún hosting (opcional, si usás algo como Cloudinary, Imgur API, etc.)
+                # Por ahora, mostramos localmente (en modo local servirá)
+                st.image(avatar_path, caption="Tu nuevo avatar")
+
+                # 🚀 ACTUALIZAR URL en GSheet
+                # Si estás trabajando en local, asumimos que vas a hostear las imágenes manualmente
+                # Alternativa mínima: usar Imgur o Drive compartido con link público
+                # Por ahora: mostramos el path temporal
+                public_url = f"https://example.com/{avatar_path}"  # Cambiar si tenés hosting
+                update_avatar_url(email, public_url)
+                # st.success("✅ Avatar actualizado en la base")
+
+
+
+
+            
             uploaded_file = st.file_uploader("📷 Subí tu nuevo avatar", type=["png", "jpg", "jpeg"])
             if uploaded_file:
                 filename = f"{uuid.uuid4()}.png"
