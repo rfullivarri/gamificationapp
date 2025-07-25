@@ -19,7 +19,9 @@ def get_gamification_data(email):
         return None
 
     # Acceder al archivo del usuario
-    spreadsheet_id = fila["GoogleSheetID"]
+    spreadsheet_url = fila["GoogleSheetID"]
+    match = re.search(r'/d/([a-zA-Z0-9-_]+)', spreadsheet_url)
+    spreadsheet_id = match.group(1) if match else spreadsheet_url
     gs = client.open_by_key(spreadsheet_id)
 
     # Función auxiliar para convertir a DataFrame con headers correctos
