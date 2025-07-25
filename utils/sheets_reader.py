@@ -57,5 +57,8 @@ def get_gamification_data(email):
         "niveles": niveles,
         "game_mode": game_mode,
         "reward_setup": reward_setup,
-        "rewards": rewards
+        "rewards": rewards,
+        "xp_total": xp_total,
+        "nivel_actual": nivel_actual,
+        "xp_faltante": xp_faltante
     }
