@@ -31,6 +31,17 @@ if email:
 
         # 📊 Radar de Rasgos
         with col1:
+            st.subheader("🎯 Nivel actual")
+            st.metric(label="Nivel", value=nivel_actual)
+            st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
+            st.image("https://i.imgur.com/z7nGzGx.png", caption="Avatar por defecto", use_column_width=True)
+            st.subheader("💠 Estado diario")
+            st.progress(0.75, text="🫀 HP")
+            st.progress(0.60, text="🏵️ Mood")
+            st.progress(0.40, text="🧠 Focus")
+
+        # 🎯 Avatar y Nivel
+        with col2:
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "CP"]].copy()
             df_radar.columns = ["Rasgo", "Puntaje"]
@@ -42,20 +53,9 @@ if email:
             else:
                 st.warning("No hay datos para el radar chart.")
 
-        # 🎯 Avatar y Nivel
-        with col2:
-            st.subheader("🎯 Nivel actual")
-            st.metric(label="Nivel", value=nivel_actual)
-            st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
-            st.markdown(f"**Total EXP:** {xp_total}")
-            st.image("https://i.imgur.com/z7nGzGx.png", caption="Avatar por defecto", use_column_width=True)
-
         # 💠 Estado diario
         with col3:
-            st.subheader("💠 Estado diario")
-            st.progress(0.75, text="🫀 HP")
-            st.progress(0.60, text="🏵️ Mood")
-            st.progress(0.40, text="🧠 Focus")
+            st.markdown(f"**Total EXP:** {xp_total}")            
 
         # 📋 Tabla resumen
         st.markdown("---")
