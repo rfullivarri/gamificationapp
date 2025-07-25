@@ -1,44 +1,54 @@
 import gspread
 import pandas as pd
-import re
-import streamlit as st
 from oauth2client.service_account import ServiceAccountCredentials
+import streamlit as st
 
 def get_gamification_data(email):
-    # 1. Autenticación con Google Sheets usando las credenciales desde secrets.toml
+    # Autenticación con Google
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
     client = gspread.authorize(creds)
 
-    # 2. Abrimos el archivo central de registros
+    # Acceder al archivo central
     base = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
     registros = base.worksheet("Registros de Usuarios").get_all_records()
 
-    # 3. Buscamos la fila correspondiente al email ingresado
+    # Buscar fila por correo
     fila = next((r for r in registros if r["Email"] == email), None)
     if not fila:
-        st.error("❌ No se encontró una base de datos vinculada a ese correo.")
-        return None, None, None
+        return None
 
-    # 4. Extraemos el ID puro desde la URL completa del Google Sheet
-    spreadsheet_url = fila["GoogleSheetID"]
-    match = re.search(r"/d/([a-zA-Z0-9-_]+)", spreadsheet_url)
-    if not match:
-        st.error("❌ No se pudo extraer el ID del Google Sheet desde la URL.")
-        return None, None, None
-
-    spreadsheet_id = match.group(1)
-
-    # 5. Abrimos el archivo del usuario por su ID
+    # Acceder al archivo del usuario
+    spreadsheet_id = fila["GoogleSheetID"]
     gs = client.open_by_key(spreadsheet_id)
 
-    # 6. Leemos las hojas necesarias
-    try:
-        bbdd = pd.DataFrame(gs.worksheet("BBDD").get_all_records())
-        daily_log = pd.DataFrame(gs.worksheet("Daily Log").get_all_records())
-        setup = pd.DataFrame(gs.worksheet("Setup").get_all_records())
-    except Exception as e:
-        st.error(f"❌ No se pudieron leer las hojas del archivo del usuario: {e}")
-        return None, None, None
+    # Función auxiliar para convertir a DataFrame con headers correctos
+    def to_df(raw_data):
+        return pd.DataFrame(raw_data[1:], columns=raw_data[0])
 
-    return bbdd, daily_log, setup
+    # Leer hojas y rangos específicos
+    ws_bbdd = gs.worksheet("BBDD")
+    tabla_principal = to_df(ws_bbdd.get("A1:M"))
+    acumulados_subconjunto = to_df(ws_bbdd.get("W1:AE"))
+
+    ws_daily = gs.worksheet("Daily Log")
+    daily_log = to_df(ws_daily.get("A1:D"))
+
+    ws_setup = gs.worksheet("Setup")
+    niveles = to_df(ws_setup.get("A1:B"))
+    game_mode = to_df(ws_setup.get("G1:G"))
+    reward_setup = to_df(ws_setup.get("I1:O"))
+
+    ws_rewards = gs.worksheet("Recompensas")
+    rewards = to_df(ws_rewards.get("A1:H"))
+
+    # Devolver todo en un diccionario
+    return {
+        "tabla_principal": tabla_principal,
+        "acumulados_subconjunto": acumulados_subconjunto,
+        "daily_log": daily_log,
+        "niveles": niveles,
+        "game_mode": game_mode,
+        "reward_setup": reward_setup,
+        "rewards": rewards
+    }
