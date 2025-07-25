@@ -27,13 +27,19 @@ if email:
         xp_faltante = data["xp_faltante"]
 
         # ------------------- LAYOUT A TRES COLUMNAS -------------------
-        col1, col2, col3 = st.columns([1.1, 1.8, 1.1])
+        col1, col2, col3 = st.columns([1, 2, 1])
 
         # 📊 Radar de Rasgos
         with col1:
              # 🎯 Nivel
             st.subheader("🎯 Nivel actual")
-            st.metric(label="Nivel", value=nivel_actual)
+#            st.metric(label="Nivel", value=nivel_actual)
+            # Nivel centrado y más grande
+            st.markdown(f"""
+                <div style='text-align: center; font-size: 60px; font-weight: bold; color: #4B4B4B;'>
+                    {nivel_actual}
+                </div>
+            """, unsafe_allow_html=True)
             st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
             
             # 🎯 Avatar
