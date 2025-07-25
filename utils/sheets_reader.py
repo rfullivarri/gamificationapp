@@ -41,9 +41,9 @@ def get_gamification_data(email):
     niveles = to_df(ws_setup.get("A1:B"))
     game_mode = to_df(ws_setup.get("G1:G"))
     reward_setup = to_df(ws_setup.get("I1:O"))
-    xp_total = Setup.iloc[5, 4]      # Fila 6, columna E
-    nivel_actual = Setup.iloc[7, 4]  # Fila 8, columna E
-    xp_faltante = Setup.iloc[8, 4]   # Fila 9, columna E
+    xp_total = ws_setup.iloc[5, 4]      # Fila 6, columna E
+    nivel_actual = ws_setup.iloc[7, 4]  # Fila 8, columna E
+    xp_faltante = ws_setup.iloc[8, 4]   # Fila 9, columna E
 
     ws_rewards = gs.worksheet("Recompensas")
     rewards = to_df(ws_rewards.get("A1:H"))
