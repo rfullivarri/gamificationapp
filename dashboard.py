@@ -10,38 +10,36 @@ st.markdown("<h1 style='text-align: center;'>🧠 Self-Improvement Dashboard</h1
 # 📩 Input de correo
 email = st.text_input("📧 Ingresá tu correo electrónico")
 
+# 🔄 Script para desaparecer mensaje verde
+st.markdown("""
+    <script>
+        setTimeout(() => {
+            let successMsg = window.parent.document.querySelector('[data-testid="stNotificationContentSuccess"]');
+            if (successMsg) successMsg.parentElement.style.display = 'none';
+        }, 2000);
+    </script>
+""", unsafe_allow_html=True)
+
 if email:
     data = get_gamification_data(email)
 
     if data:
         st.success("✅ Tenemos tus stats!")
 
-        # ------------------- LAYOUT A DOS COLUMNAS -------------------
-        col1, col2 = st.columns([1.2, 2])
+        # ------------------- LAYOUT A TRES COLUMNAS -------------------
+        col1, col2, col3 = st.columns([1.2, 2, 1])
 
         with col1:
-            # 📸 Avatar
-            st.subheader("🎭 Avatar")
-            uploaded_file = st.file_uploader("Subí tu avatar estilo 'story'", type=["png", "jpg", "jpeg"])
-            if uploaded_file:
-                img = Image.open(uploaded_file)
-                st.image(img, caption="Tu avatar", use_column_width=True)
-            else:
-                st.image("https://i.imgur.com/z7nGzGx.png", caption="Avatar por defecto", use_column_width=True)
-
-            # 🧪 Nivel
+            # 🎯 Nivel
             st.subheader("🎯 Nivel actual")
             nivel = data["niveles"]["Nivel"][0] if not data["niveles"].empty else "Desconocido"
             st.metric(label="Nivel", value=nivel)
 
-            # ❤️ Estado Diario
-            st.subheader("💠 Estado diario")
-            st.progress(0.75, text="🫀 HP")
-            st.progress(0.60, text="🏵️ Mood")
-            st.progress(0.40, text="🧠 Focus")
+            # 📸 Avatar (uploader oculto)
+            st.image("https://i.imgur.com/z7nGzGx.png", caption="Tu avatar", use_column_width=True)
 
         with col2:
-            # 🔵 Radar Chart
+            # 📊 Radar de Rasgos
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "CP"]].copy()
             df_radar.columns = ["Rasgo", "Puntaje"]
@@ -54,9 +52,20 @@ if email:
             else:
                 st.warning("No hay datos para el radar chart.")
 
+        with col3:
+            # 🧪 Experiencia total
+            total_exp = data["niveles"]["Total EXP"][0] if not data["niveles"].empty else 0
+            st.metric(label="🎮 Total EXP", value=int(total_exp))
+
+            # ❤️ Estado Diario
+            st.subheader("💠 Estado diario")
+            st.progress(0.75, text="🫀 HP")
+            st.progress(0.60, text="🏵️ Mood")
+            st.progress(0.40, text="🧠 Focus")
+
         st.markdown("---")
 
-        # 📋 Resumen abajo
+        # 📋 Resumen
         st.subheader("📋 Resumen por Subconjunto")
         st.dataframe(data["acumulados_subconjunto"], use_container_width=True)
 
