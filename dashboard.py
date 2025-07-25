@@ -48,7 +48,7 @@ if email:
 
             # 🎯 Avatar
             # Subida de imagen personalizada
-            st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
+            #st.markdown("### 📸 Subí tu Avatar personalizado (opcional)")
 
             avatar_file = st.file_uploader("Subí tu imagen (JPG o PNG)", type=["jpg", "jpeg", "png"])
             if avatar_file:
@@ -71,19 +71,6 @@ if email:
                 # st.success("✅ Avatar actualizado en la base")
 
 
-
-
-            
-            uploaded_file = st.file_uploader("📷 Subí tu nuevo avatar", type=["png", "jpg", "jpeg"])
-            if uploaded_file:
-                filename = f"{uuid.uuid4()}.png"
-                filepath = os.path.join("/tmp", filename)
-                with open(filepath, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                # Subí a tu hosting o Drive público y obtené URL
-                uploaded_url = f"https://drive.google.com/uc?id=TUSUBIDAFAKE/{filename}"  # Reemplazá por tu lógica real
-                update_avatar_url(email, uploaded_url)
-                st.success("✅ Avatar actualizado. Recargá para verlo reflejado.")
 
             # 💠 Estado diario
             st.subheader("💠 Estado diario")
