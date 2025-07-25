@@ -47,6 +47,7 @@ if email:
         with col2:
             st.subheader("🎯 Nivel actual")
             st.metric(label="Nivel", value=nivel_actual)
+            st.markdown(f"<span style='font-size: 16px;'>✨ Te faltan <strong>{xp_faltante}</strong> XP para tu próximo nivel</span>", unsafe_allow_html=True)
 
             st.subheader("🎭 Tu avatar")
             st.image("https://i.imgur.com/z7nGzGx.png", caption="Avatar por defecto", use_container_width=True)
