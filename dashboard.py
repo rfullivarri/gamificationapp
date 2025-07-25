@@ -1,8 +1,10 @@
 import streamlit as st
 from PIL import Image
 import plotly.express as px
-from utils.sheets_reader import get_gamification_data
+from utils.sheets_reader import get_gamification_data, update_avatar_url
 import time
+import os
+import uuid
 
 # 🧱 Configuración general
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
@@ -25,33 +27,41 @@ if email:
         xp_total = data["xp_total"]
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
+        avatar_url = data.get("avatar_url") or "https://i.imgur.com/z7nGzGx.png"
 
         # ------------------- LAYOUT A TRES COLUMNAS -------------------
         col1, col2, col3 = st.columns([1, 2, 1])
 
-        # 📊 Radar de Rasgos
+        # 📊 Info lateral izquierda
         with col1:
-             # 🎯 Nivel
             st.subheader("🎯 Nivel actual")
-#            st.metric(label="Nivel", value=nivel_actual)
-            # Nivel centrado y más grande
             st.markdown(f"""
                 <div style='text-align: center; font-size: 60px; font-weight: bold; color: #4B4B4B;'>
                     {nivel_actual}
                 </div>
             """, unsafe_allow_html=True)
             st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
-            
+
             # 🎯 Avatar
-            st.image("https://i.imgur.com/z7nGzGx.png", caption="Avatar por defecto", use_column_width=True)
-            
+            st.image(avatar_url, caption="Tu avatar", use_column_width=True)
+
+            uploaded_file = st.file_uploader("📷 Subí tu nuevo avatar", type=["png", "jpg", "jpeg"])
+            if uploaded_file:
+                filename = f"{uuid.uuid4()}.png"
+                filepath = os.path.join("/tmp", filename)
+                with open(filepath, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                # Subí a tu hosting o Drive público y obtené URL
+                uploaded_url = f"https://drive.google.com/uc?id=TUSUBIDAFAKE/{filename}"  # Reemplazá por tu lógica real
+                update_avatar_url(email, uploaded_url)
+                st.success("✅ Avatar actualizado. Recargá para verlo reflejado.")
+
             # 💠 Estado diario
             st.subheader("💠 Estado diario")
             st.progress(0.75, text="🫀 HP")
             st.progress(0.60, text="🏵️ Mood")
             st.progress(0.40, text="🧠 Focus")
 
-        
         with col2:
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "CP"]].copy()
@@ -64,9 +74,8 @@ if email:
             else:
                 st.warning("No hay datos para el radar chart.")
 
-        
         with col3:
-             st.subheader(f"🏆**Total EXP:** {xp_total}")            
+            st.subheader(f"🏆**Total EXP:** {xp_total}")            
 
         # 📋 Tabla resumen
         st.markdown("---")
@@ -75,4 +84,3 @@ if email:
 
     else:
         st.error("❌ No se encontró base para ese correo.")
-
