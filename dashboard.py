@@ -27,7 +27,7 @@ if email:
         xp_faltante = data["xp_faltante"]
 
         # ------------------- LAYOUT A TRES COLUMNAS -------------------
-        col1, col2, col3 = st.columns([1.3, 1.2, 1.5])
+        col1, col2, col3 = st.columns([1.25, 1.5, 1.25])
 
         # 📊 Radar de Rasgos
         with col1:
@@ -55,7 +55,7 @@ if email:
 
         # 💠 Estado diario
         with col3:
-            st.markdown(f"**Total EXP:** {xp_total}")            
+             st.subheader(f"**Total EXP:** {xp_total}")            
 
         # 📋 Tabla resumen
         st.markdown("---")
