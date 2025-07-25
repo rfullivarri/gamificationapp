@@ -38,13 +38,13 @@ if email:
         with col1:
             st.image(avatar_url, width=250)
 
-            avatar_file = st.file_uploader("Elegí tu imagen", type=["jpg", "jpeg", "png"])
+            avatar_file = st.file_uploader("", type=["jpg", "jpeg", "png"],width=100)
             if avatar_file:
                     file_extension = avatar_file.name.split(".")[-1]
                     avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
                     with open(avatar_path, "wb") as f:
                         f.write(avatar_file.read())
-                    #st.image(avatar_path, caption="Nuevo avatar cargado", width=200)
+                    st.image(avatar_path, width=200)
 
                     public_url = f"https://example.com/{avatar_path}"
                     update_avatar_url(email, public_url)
