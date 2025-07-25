@@ -71,3 +71,4 @@ if email:
 
     else:
         st.error("❌ No se encontró base para ese correo.")
+
