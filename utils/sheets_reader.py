@@ -16,25 +16,16 @@ def get_gamification_data(email):
     registros = base.worksheet("Registros de Usuarios").get_all_records()
 
     # Buscar fila por correo
-    fila = next((r for r in registros if r["Email"] == email), None)
+    fila = next((r for r in registros if r["Email"].strip().lower() == email.strip().lower()), None)
     if not fila:
         return None
-        
-def update_avatar_url(email, url):
-    creds = Credentials.from_service_account_info(st.secrets["google_service_account"])
-    client = gspread.authorize(creds)
 
-    # Abre el archivo central
-    sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
-    tab = sheet.worksheet("Registros de Usuarios")
+    # Extraer el avatar si existe
+    avatar_url = fila.get("Avatar URL", "").strip()
+    if not avatar_url:
+        avatar_url = "https://i.imgur.com/z7nGzGx.png"  # Avatar por defecto
 
-    data = tab.get_all_values()
-    for idx, row in enumerate(data):
-        if row and row[0].strip().lower() == email.strip().lower():
-            tab.update_cell(idx + 1, 9, url)  # Columna I = 9
-            break
-    
-    # Acceder al archivo del usuario
+    # Extraer ID del archivo del usuario
     spreadsheet_url = fila["GoogleSheetID"]
     match = re.search(r'/d/([a-zA-Z0-9-_]+)', spreadsheet_url)
     spreadsheet_id = match.group(1) if match else spreadsheet_url
@@ -75,5 +66,21 @@ def update_avatar_url(email, url):
         "rewards": rewards,
         "xp_total": xp_total,
         "nivel_actual": nivel_actual,
-        "xp_faltante": xp_faltante
+        "xp_faltante": xp_faltante,
+        "avatar_url": avatar_url
     }
+
+
+def update_avatar_url(email, url):
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"])
+    client = gspread.authorize(creds)
+
+    # Abre el archivo central
+    sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
+    tab = sheet.worksheet("Registros de Usuarios")
+
+    data = tab.get_all_values()
+    for idx, row in enumerate(data):
+        if row and row[0].strip().lower() == email.strip().lower():
+            tab.update_cell(idx + 1, 9, url)  # Columna I = 9
+            break
