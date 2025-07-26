@@ -38,7 +38,6 @@ if email:
         xp_HP = data["xp_HP"]
         xp_Mood = data["xp_Mood"]
         xp_Focus = data["xp_Focus"]
-        daily_log = data["daily_log"]
 
 # --------------------- LAYOUT A TRES COLUMNAS --------------------------------------------------
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -48,6 +47,7 @@ if email:
             def es_url_valida(url):
                 return url.startswith("http") and not url.endswith("/")
 
+            # Mostrar avatar solo si es válido
             if es_url_valida(avatar_url):
                 st.image(avatar_url, width=200)
             else:
@@ -55,7 +55,7 @@ if email:
                 st.image(avatar_url, width=200)
 
             cambiar_avatar = st.checkbox("🖼 Cambiar avatar", key="cambiar_avatar")
-            avatar_uploader = None
+            avatar_uploader = None  # inicializá antes
             if cambiar_avatar:
                 avatar_uploader = st.file_uploader(
                     label="Subí tu nuevo avatar",
@@ -66,14 +66,16 @@ if email:
             if avatar_uploader:
                 file_extension = avatar_uploader.name.split(".")[-1]
                 temp_path = f"/tmp/temp_avatar.{file_extension}"
-
+            
+                # Guardar archivo temporal
                 with open(temp_path, "wb") as f:
                     f.write(avatar_uploader.read())
-
+            
+                # Generar nombre final basado en correo
                 nombre_usuario = email.split("@")[0]
                 nombre_limpio = "".join(c for c in nombre_usuario if c.isalnum()).lower()
                 nombre_archivo = f"{nombre_limpio}_avatar.{file_extension}"
-
+            
                 try:
                     nuevo_link = subir_a_drive_y_obtener_link(temp_path, nombre_archivo)
                     update_avatar_url(email, nuevo_link)
@@ -82,12 +84,13 @@ if email:
                 except Exception as e:
                     st.error(f"❌ Error al subir la imagen: {e}")
 
+            # 💠 Estado diario
             st.subheader("💠 Estado diario")
             st.progress(parse_percentage(xp_HP), text=f"🫀 HP – {int(parse_percentage(xp_HP) * 100)}%")
             st.progress(parse_percentage(xp_Mood), text=f"🏵️ Mood – {int(parse_percentage(xp_Mood) * 100)}%")
             st.progress(parse_percentage(xp_Focus), text=f"🧠 Focus – {int(parse_percentage(xp_Focus) * 100)}%")
 
-# 📊 COLUMNA 2 – RADAR Y EXP DIARIA ---------------------------------------------------------
+        # 📊 COLUMNA 2 – RADAR ---------------------------------------------
         with col2:
             st.subheader("📊 Radar de Rasgos")
 
@@ -134,39 +137,32 @@ if email:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No hay datos para graficar.")
+#---EXP POR DIA----------------------------------------------------------------------------------------
+            st.markdown("### 📈 Daily Cultivation")
+            
+            # Filtrar registros del mes actual
+            today = pd.to_datetime("today")
+            current_month = today.strftime("%Y-%m")
+            df_daily = daily_log.copy()
+            df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"])
+            df_month = df_daily[df_daily["Fecha"].dt.strftime("%Y-%m") == current_month]
+        
+            # Agrupar por fecha y sumar EXP
+            df_exp_diaria = df_month.groupby("Fecha")["EXP"].sum().reset_index()
+        
+            # Mostrar selector de mes
+            meses_unicos = sorted(daily_log["Fecha"].apply(lambda x: x[:7]).unique())
+            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month))
+        
+            df_mes = daily_log[daily_log["Fecha"].str.startswith(mes_seleccionado)]
+            df_mes["Fecha"] = pd.to_datetime(df_mes["Fecha"])
+            df_exp_mes = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
+        
+            st.line_chart(df_exp_mes.set_index("Fecha"))
 
-#---EXP POR DÍA----------------------------------------------------------------------------------------
-                st.markdown("### 📈 Daily Cultivation")
-        
-                df_daily = data["daily_log"].copy()
-        
-                # Asegurar que la columna Fecha es datetime (saltando errores)
-                df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"], errors="coerce")
-                df_daily = df_daily.dropna(subset=["Fecha", "EXP"])
-        
-                # Obtener mes actual y formatearlo
-                today = pd.Timestamp.today()
-                current_month = today.strftime("%Y-%m")
-        
-                # Crear lista de meses únicos
-                df_daily["Mes"] = df_daily["Fecha"].dt.strftime("%Y-%m")
-                meses_unicos = sorted(df_daily["Mes"].dropna().unique())
-        
-                # Selector de mes
-                mes_seleccionado = st.selectbox("📅 Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month) if current_month in meses_unicos else 0)
-        
-                # Filtrar por mes seleccionado
-                df_mes = df_daily[df_daily["Mes"] == mes_seleccionado]
-        
-                # Agrupar por fecha y sumar EXP
-                df_exp_por_dia = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
-        
-                # Mostrar gráfico
-                st.line_chart(df_exp_por_dia.set_index("Fecha"))
-
-# 🏆 COLUMNA 3 – XP Y NIVEL ---------------------------------------------------------
+        # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
         with col3:
-            st.subheader(f"🏆 Total XP: {xp_total}")
+            st.subheader(f"🏆**Total XP:** {xp_total}")
             st.subheader("🎯 Nivel actual")
             st.markdown(f"""
                 <div style='text-align: center; font-size: 50px; font-weight: bold; color: #4B4B4B;'>
