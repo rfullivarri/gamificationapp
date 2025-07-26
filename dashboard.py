@@ -101,10 +101,44 @@ if email:
                 st.warning("No hay datos para graficar.")
 
             st.subheader("🪴 Daily Cultivation")
-            df= data["daily_cultivation"]
+            #df= data["daily_cultivation"]
+            #df["Fecha"] = pd.to_datetime(df["Fecha"])
+            #df.set_index("Fecha", inplace=True)
+            #st.line_chart(df[["XP"]])
+
+            df = data["daily_cultivation"].copy()
             df["Fecha"] = pd.to_datetime(df["Fecha"])
             df.set_index("Fecha", inplace=True)
-            st.line_chart(df[["XP"]])
+                        
+            # Crear gráfico personalizado con Plotly
+            fig = go.Figure()
+            
+            fig.add_trace(go.Scatter(
+                x=df.index,
+                y=df["XP"],
+                mode="lines+markers+text",  # Línea + punto + texto
+                text=df["XP"],              # Mostrar valores
+                textposition="top center",
+                line=dict(shape="spline", color="#4B9CD3", width=2),  # Línea más curva
+                marker=dict(size=6, color="#4B9CD3")
+            ))
+            
+            # Configurar el layout del gráfico
+            fig.update_layout(
+                title="",  # opcional
+                xaxis_title="",  # opcional
+                yaxis_title="XP Ganado",
+                yaxis=dict(range=[0, df["XP"].max() + 5]),  # comienza en 0
+                plot_bgcolor="#f9f9f9",  # fondo gris claro
+                margin=dict(l=20, r=20, t=30, b=20),
+                height=400
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+
+
+
+        
 
         # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
         with col3:
