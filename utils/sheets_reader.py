@@ -115,18 +115,29 @@ def subir_a_drive_y_obtener_link(local_path, nombre_final):
 
     drive_service = build("drive", "v3", credentials=creds)
 
-    folder_id = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
+    folder_id = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"  # TU carpeta compartida con el bot
 
     file_metadata = {
         "name": nombre_final,
         "parents": [folder_id]
     }
+
     media = MediaFileUpload(local_path, resumable=True)
-    file = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+    
+    try:
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields="id"
+        ).execute()
 
-    drive_service.permissions().create(
-        fileId=file["id"],
-        body={"type": "anyone", "role": "reader"},
-    ).execute()
+        # Compartir con acceso público
+        drive_service.permissions().create(
+            fileId=file["id"],
+            body={"type": "anyone", "role": "reader"},
+        ).execute()
 
-    return f"https://drive.google.com/uc?id={file['id']}"
+        return f"https://drive.google.com/uc?id={file['id']}"
+
+    except Exception as e:
+        raise RuntimeError(f"Error al subir a Drive: {e}")
