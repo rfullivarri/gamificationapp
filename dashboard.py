@@ -72,12 +72,15 @@ if email:
         with col2:
             st.subheader("📊 Radar de Rasgos")
         
+            # Usamos columnas exactas de tu tabla
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar.columns = ["Rasgo", "Valor"]
         
-            # Asegurar que los valores sean numéricos
+            # Convertir valores a numérico
             df_radar["Valor"] = pd.to_numeric(df_radar["Valor"], errors="coerce")
-            df_radar.dropna(inplace=True)
+        
+            # Eliminar valores NaN
+            df_radar = df_radar.dropna(subset=["Valor"])
         
             if not df_radar.empty:
                 max_val = df_radar["Valor"].max()
@@ -100,7 +103,7 @@ if email:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No hay datos válidos para mostrar.")
-                
+                        
 #COLUMNA 3----------------------------------------------------------------------------------------------------------------
         with col3:
             st.subheader(f"🏆**Total XP:** {xp_total}")
