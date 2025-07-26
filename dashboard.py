@@ -116,6 +116,7 @@ if email:
                             showline=False,
                             showticklabels=True,
                             gridcolor="gray",
+                            dtick=40,
                             gridwidth=0.5
                         ),
                         angularaxis=dict(
@@ -125,8 +126,8 @@ if email:
                             gridwidth=0.5
                         )
                     ),
-                    paper_bgcolor="#f7f7f7",
-                    plot_bgcolor="white",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
                     margin=dict(t=20, b=20, l=20, r=20),
                     showlegend=False
                 )
