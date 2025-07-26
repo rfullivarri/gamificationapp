@@ -71,24 +71,27 @@ if email:
         #COLUMNA 2---------------------------------------------
         with col2:
             st.subheader("📊 Radar de Rasgos")
+        
+            # Accedemos a la tabla exacta y columnas correctas
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar.columns = ["Rasgo", "Valor"]
-
+        
             if not df_radar.empty:
-                # Escalar los valores con un máximo de 1.3
+                # Escalamos para que el valor máximo sea 1.3
                 df_radar["Valor Escalado"] = df_radar["Valor"] / df_radar["Valor"].max() * 1.3
-
-                # Gráfico radar
+        
                 fig = px.line_polar(
                     df_radar,
                     r="Valor Escalado",
                     theta="Rasgo",
                     line_close=True,
                     template="plotly_dark",
+                    hover_name="Rasgo",
+                    hover_data={"Valor": True, "Valor Escalado": False},
                 )
+        
                 fig.update_traces(fill='toself')
-
-                # Configurar el layout del gráfico
+        
                 fig.update_layout(
                     polar=dict(
                         radialaxis=dict(
@@ -101,11 +104,11 @@ if email:
                     showlegend=False,
                     margin=dict(t=40, b=0, l=0, r=0),
                 )
-
+        
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No hay datos para el radar chart.")
-        
+                
        #COLUMNA 3---------------------------------
         with col3:
             st.subheader(f"🏆**Total XP:** {xp_total}")
