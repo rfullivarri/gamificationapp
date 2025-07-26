@@ -116,9 +116,10 @@ def upload_avatar_and_save_url(uploaded_file, email):
 
         # Subir a Google Drive
         drive_service = build("drive", "v3", credentials=creds)
+        folder_ID = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
         file_metadata = {
             "name": uploaded_file.name,
-            "parents": [FOLDER_ID]  # ID de tu carpeta de Drive (tipo "Gamification Life")
+            "parents": [folder_ID]  # ID de tu carpeta de Drive (tipo "Gamification Life")
         }
         media = MediaFileUpload(uploaded_file.name, resumable=True)
         uploaded = drive_service.files().create(
