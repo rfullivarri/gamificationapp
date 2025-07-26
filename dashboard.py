@@ -24,11 +24,13 @@ if email:
     data = get_gamification_data(email)
 
     if data:
+        # ✅ Mensaje de carga
         success_message = st.empty()
         success_message.success("✅ Tenemos tus stats!")
         time.sleep(2)
         success_message.empty()
 
+        # 📦 Extraer datos
         xp_total = data["xp_total"]
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
@@ -36,11 +38,12 @@ if email:
         xp_HP = data["xp_HP"]
         xp_Mood = data["xp_Mood"]
         xp_Focus = data["xp_Focus"]
-        daily_log = data["daily_log"]  # 🛠️ ¡CLAVE! Para evitar el error que tenías
+        daily_log = data["daily_log"]
 
+# --------------------- LAYOUT A TRES COLUMNAS --------------------------------------------------
         col1, col2, col3 = st.columns([1, 2, 1])
 
-        # COLUMNA 1 – AVATAR Y ESTADO
+# 🖼 COLUMNA 1 – AVATAR Y ESTADO ---------------------------------------------------------
         with col1:
             def es_url_valida(url):
                 return url.startswith("http") and not url.endswith("/")
@@ -84,9 +87,10 @@ if email:
             st.progress(parse_percentage(xp_Mood), text=f"🏵️ Mood – {int(parse_percentage(xp_Mood) * 100)}%")
             st.progress(parse_percentage(xp_Focus), text=f"🧠 Focus – {int(parse_percentage(xp_Focus) * 100)}%")
 
-        # COLUMNA 2 – RADAR Y EXP DIARIA
+# 📊 COLUMNA 2 – RADAR Y EXP DIARIA ---------------------------------------------------------
         with col2:
             st.subheader("📊 Radar de Rasgos")
+
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar = df_radar.dropna(subset=["Rasgos", "TEXPR"])
             df_radar["TEXPR"] = pd.to_numeric(df_radar["TEXPR"], errors="coerce")
@@ -131,26 +135,23 @@ if email:
             else:
                 st.warning("No hay datos para graficar.")
 
+            # 📈 EXP diaria
             st.markdown("### 📈 Daily Cultivation")
+            daily_log["Fecha"] = pd.to_datetime(daily_log["Fecha"], errors="coerce")
+            daily_log = daily_log.dropna(subset=["Fecha"])
 
-            # Formatear fechas
-            df_daily = daily_log.copy()
-            df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"], errors="coerce")
-            df_daily = df_daily.dropna(subset=["Fecha"])
+            meses_unicos = sorted(daily_log["Fecha"].dt.strftime("%Y-%m").unique())
             current_month = pd.to_datetime("today").strftime("%Y-%m")
+            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month))
 
-            # Filtrar por mes seleccionado
-            meses_unicos = sorted(df_daily["Fecha"].dt.strftime("%Y-%m").unique())
-            mes_index = meses_unicos.index(current_month) if current_month in meses_unicos else len(meses_unicos) - 1
-            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=mes_index)
-
-            df_mes = df_daily[df_daily["Fecha"].dt.strftime("%Y-%m") == mes_seleccionado]
+            df_mes = daily_log[daily_log["Fecha"].dt.strftime("%Y-%m") == mes_seleccionado]
             df_exp_mes = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
-            st.line_chart(df_exp_mes.set_index("Fecha"), use_container_width=True)
 
-        # COLUMNA 3 – NIVELES Y XP
+            st.line_chart(df_exp_mes.set_index("Fecha"))
+
+# 🏆 COLUMNA 3 – XP Y NIVEL ---------------------------------------------------------
         with col3:
-            st.subheader(f"🏆**Total XP:** {xp_total}")
+            st.subheader(f"🏆 Total XP: {xp_total}")
             st.subheader("🎯 Nivel actual")
             st.markdown(f"""
                 <div style='text-align: center; font-size: 50px; font-weight: bold; color: #4B4B4B;'>
@@ -159,6 +160,7 @@ if email:
             """, unsafe_allow_html=True)
             st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
 
+        # 📋 Tabla resumen final
         st.markdown("---")
         st.subheader("📋 Resumen por Subconjunto")
         st.dataframe(data["acumulados_subconjunto"], use_container_width=True)
