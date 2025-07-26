@@ -45,8 +45,8 @@ def get_gamification_data(email):
     spreadsheet_id = match.group(1) if match else spreadsheet_url
     gs = client.open_by_key(spreadsheet_id)
 
-    # Función auxiliar para convertir a DataFrame con headers correctos
-    def to_df(raw_data):
+# Función auxiliar para convertir a DataFrame con headers correctos
+def to_df(raw_data):
         return pd.DataFrame(raw_data[1:], columns=raw_data[0])
 
     # Leer hojas y rangos específicos
@@ -92,7 +92,6 @@ def get_gamification_data(email):
 
 
 def normalizar_link_drive(link):
-    import re
     if not link:
         return ""
     match = re.search(r"/d/([a-zA-Z0-9_-]+)", link)
