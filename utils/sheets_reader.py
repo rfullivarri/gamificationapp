@@ -5,6 +5,17 @@ import re
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
+def parse_percentage(val):
+    if val is None:
+        return 0.0
+    if isinstance(val, str):
+        val = val.strip().replace('%', '').replace(',', '.')
+        try:
+            val = float(val)
+        except:
+            return 0.0
+    return max(0.0, min(val if val <= 1 else val / 100, 1.0))
+    
 def get_gamification_data(email):
     # Autenticación con Google
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
