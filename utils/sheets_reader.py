@@ -44,6 +44,7 @@ def get_gamification_data(email):
     ws_bbdd = gs.worksheet("BBDD")
     tabla_principal = to_df(ws_bbdd.get("A1:M"))
     acumulados_subconjunto = to_df(ws_bbdd.get("W1:AE"))
+    daily_cultivation = to_df(ws_bbdd.get("AH1:AI"))
 
     ws_daily = gs.worksheet("Daily Log")
     daily_log = to_df(ws_daily.get("A1:E"))
@@ -82,4 +83,5 @@ def get_gamification_data(email):
         "xp_HP": xp_HP,
         "xp_Mood": xp_Mood,
         "xp_Focus": xp_Focus,
+        "daily_cultivation": daily_cultivation,
     }
