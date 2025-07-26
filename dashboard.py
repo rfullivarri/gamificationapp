@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 import plotly.express as px
-from utils.sheets_reader import get_gamification_data, update_avatar_url
+from utils.sheets_reader import get_gamification_data, update_avatar_url, xp_HP, xp_Mood, xp_Focus
 import time
 import os
 import uuid
@@ -64,10 +64,26 @@ if email:
                 update_avatar_url(email, avatar_url)
 
             # 💠 Estado diario
-            st.subheader("💠 Estado diario")
-            st.progress(0.75, text="🫀 HP")
-            st.progress(0.60, text="🏵️ Mood")
-            st.progress(0.40, text="🧠 Focus")
+            #st.subheader("💠 Estado diario")
+            #st.progress(0.75, text="🫀 HP")
+            #st.progress(0.60, text="🏵️ Mood")
+            #st.progress(0.40, text="🧠 Focus")
+            
+                with st.container():
+                    col1, col2 = st.columns([0.9, 0.1])
+                
+                    with col1:
+                        st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
+                        st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
+                        st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
+                    
+                    with col2:
+                        with st.expander("ℹ️"):
+                            st.markdown("""
+                            - *HP*: XP ganada en este Pilar mantiene tu energía diaria.
+                            - *Mood*: Refleja tu estado emocional en base a hábitos de Soul.
+                            - *Focus*: Nivel de claridad mental y atención sostenida.
+                            """)
 
 #COLUMNA 2--------------------------------------------------------------------------------------------------------------
         with col2:
