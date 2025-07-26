@@ -10,11 +10,10 @@ import uuid
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
 st.title("🧠 Self-Improvement Dashboard")
 
-# 📩 Input de correo
+
+#📩 Input de correo-----------------------------------------------------------------------------------------------------------------
+
 email = st.text_input("📧 Ingresá tu correo electrónico")
-
-#------------------------------------------------------------------------
-
 if email:
     data = get_gamification_data(email)
 
@@ -30,11 +29,13 @@ if email:
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
         avatar_url = data.get("avatar_url") or "https://i.imgur.com/z7nGzGx.png"
+        
 
-        # ------------------- LAYOUT A TRES COLUMNAS -------------------
+# --------------------- LAYOUT A TRES COLUMNAS -----------------------------------------------------------------------------------------
+    
         col1, col2, col3 = st.columns([1, 2, 1])
 
-         # 📊 COLUMNA 1 -------------------------------------
+# COLUMNA 1 --------------------------------------------------------------------------------------------------------------------------
         with col1:
             # Si hay imagen previa o subida, mostrarla (sin título, sin caption)
             if avatar_url or "avatar_path" in locals():
@@ -67,51 +68,40 @@ if email:
             st.progress(0.60, text="🏵️ Mood")
             st.progress(0.40, text="🧠 Focus")
 
-
-        #COLUMNA 2---------------------------------------------
-         with col2:
+#COLUMNA 2--------------------------------------------------------------------------------------------------------------
+        with col2:
             st.subheader("📊 Radar de Rasgos")
         
-            # Extraer columnas exactas
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar.columns = ["Rasgo", "Valor"]
         
-            # Forzar a numérico y limpiar todo
+            # Asegurar que los valores sean numéricos
             df_radar["Valor"] = pd.to_numeric(df_radar["Valor"], errors="coerce")
-            df_radar = df_radar.dropna(subset=["Valor"])
+            df_radar.dropna(inplace=True)
         
             if not df_radar.empty:
-                # Escalar de forma robusta
                 max_val = df_radar["Valor"].max()
-                df_radar["Valor Escalado"] = df_radar["Valor"] / max_val * 1.3 if max_val > 0 else 0
+                df_radar["Valor Escalado"] = df_radar["Valor"] / max_val if max_val > 0 else 0
         
-                # Crear gráfico
                 fig = px.line_polar(
                     df_radar,
                     r="Valor Escalado",
                     theta="Rasgo",
                     line_close=True,
-                    template="plotly_dark",
-                    hover_name="Rasgo",
-                    hover_data={"Valor": True, "Valor Escalado": False},
+                    template="plotly_dark"
                 )
                 fig.update_traces(fill='toself')
                 fig.update_layout(
-                    polar=dict(
-                        radialaxis=dict(
-                            visible=True,
-                            range=[0, 1.3],
-                            tickfont=dict(size=10)
-                        )
-                    ),
+                    polar=dict(radialaxis=dict(range=[0, 1], visible=True)),
                     showlegend=False,
-                    margin=dict(t=40, b=0, l=0, r=0),
+                    margin=dict(t=20, b=20, l=20, r=20)
                 )
         
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                st.warning("No hay datos válidos para mostrar el radar.")
-       #COLUMNA 3---------------------------------
+                st.warning("No hay datos válidos para mostrar.")
+                
+#COLUMNA 3----------------------------------------------------------------------------------------------------------------
         with col3:
             st.subheader(f"🏆**Total XP:** {xp_total}")
             st.subheader("🎯 Nivel actual")
