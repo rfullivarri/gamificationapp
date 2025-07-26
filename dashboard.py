@@ -106,36 +106,32 @@ if email:
             #df.set_index("Fecha", inplace=True)
             #st.line_chart(df[["XP"]])
 
-            df = data["daily_cultivation"].copy()
-            df["Fecha"] = pd.to_datetime(df["Fecha"])
-            df.set_index("Fecha", inplace=True)
-                        
-            # Crear gráfico personalizado con Plotly
-            fig = go.Figure()
+            # Usar directamente el DataFrame que ya tenés
+            data["daily_cultivation"]["Fecha"] = pd.to_datetime(data["daily_cultivation"]["Fecha"])
             
-            fig.add_trace(go.Scatter(
-                x=df.index,
-                y=df["XP"],
-                mode="lines+markers+text",  # Línea + punto + texto
-                text=df["XP"],              # Mostrar valores
+            fig = px.line(
+                data["daily_cultivation"],
+                x="Fecha",
+                y="XP",
+                markers=True,
+                text="XP"
+            )
+            
+            fig.update_traces(
                 textposition="top center",
-                line=dict(shape="spline", color="#4B9CD3", width=2),  # Línea más curva
-                marker=dict(size=6, color="#4B9CD3")
-            ))
+                line_shape="spline",  # curva suave
+                line=dict(width=2),
+                marker=dict(size=6)
+            )
             
-            # Configurar el layout del gráfico
             fig.update_layout(
-                title="",  # opcional
-                xaxis_title="",  # opcional
-                yaxis_title="XP Ganado",
-                yaxis=dict(range=[0, df["XP"].max() + 5]),  # comienza en 0
-                plot_bgcolor="#f9f9f9",  # fondo gris claro
-                margin=dict(l=20, r=20, t=30, b=20),
-                height=400
+                yaxis=dict(range=[0, data["daily_cultivation"]["XP"].max() + 5]),
+                plot_bgcolor="#f7f7f7",
+                height=400,
+                margin=dict(l=20, r=20, t=30, b=20)
             )
             
             st.plotly_chart(fig, use_container_width=True)
-
 
 
         
