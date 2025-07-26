@@ -107,37 +107,36 @@ def update_avatar_url(email, url):
             tab.update_cell(idx + 1, 9, normalizar_link_drive(url))
             break
 
-def subir_a_drive_y_obtener_link(local_path, nombre_final):
-    creds = Credentials.from_service_account_info(
-        st.secrets["google_service_account"],
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
 
-    drive_service = build("drive", "v3", credentials=creds)
+def upload_avatar_and_save_url(uploaded_file, email):
+    if uploaded_file:
+        # Guardar el archivo temporalmente
+        with open(uploaded_file.name, "wb") as f:
+            f.write(uploaded_file.getbuffer())
 
-    folder_id = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"  # TU carpeta compartida con el bot
-
-    file_metadata = {
-        "name": nombre_final,
-        "parents": [folder_id]
-    }
-
-    media = MediaFileUpload(local_path, resumable=True)
-    
-    try:
-        file = drive_service.files().create(
+        # Subir a Google Drive
+        drive_service = build("drive", "v3", credentials=creds)
+        file_metadata = {
+            "name": uploaded_file.name,
+            "parents": [FOLDER_ID]  # ID de tu carpeta de Drive (tipo "Gamification Life")
+        }
+        media = MediaFileUpload(uploaded_file.name, resumable=True)
+        uploaded = drive_service.files().create(
             body=file_metadata,
             media_body=media,
             fields="id"
         ).execute()
 
-        # Compartir con acceso público
+        file_id = uploaded.get("id")
+
+        # Generar link compartible
         drive_service.permissions().create(
-            fileId=file["id"],
-            body={"type": "anyone", "role": "reader"},
+            fileId=file_id,
+            body={"role": "reader", "type": "anyone"},
         ).execute()
+        url = f"https://drive.google.com/file/d/{file_id}/view?usp=drivesdk"
 
-        return f"https://drive.google.com/uc?id={file['id']}"
+        # Guardar en el Sheet
+        update_avatar_url_in_sheet(email, url)
 
-    except Exception as e:
-        raise RuntimeError(f"Error al subir a Drive: {e}")
+        return url
