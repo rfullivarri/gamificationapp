@@ -69,17 +69,23 @@ if email:
 
 
         #COLUMNA 2---------------------------------------------
-        with col2:
+         with col2:
             st.subheader("📊 Radar de Rasgos")
         
-            # Accedemos a la tabla exacta y columnas correctas
+            # Extraer columnas exactas
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar.columns = ["Rasgo", "Valor"]
         
-            if not df_radar.empty:
-                # Escalamos para que el valor máximo sea 1.3
-                df_radar["Valor Escalado"] = df_radar["Valor"] / df_radar["Valor"].max() * 1.3
+            # Forzar a numérico y limpiar todo
+            df_radar["Valor"] = pd.to_numeric(df_radar["Valor"], errors="coerce")
+            df_radar = df_radar.dropna(subset=["Valor"])
         
+            if not df_radar.empty:
+                # Escalar de forma robusta
+                max_val = df_radar["Valor"].max()
+                df_radar["Valor Escalado"] = df_radar["Valor"] / max_val * 1.3 if max_val > 0 else 0
+        
+                # Crear gráfico
                 fig = px.line_polar(
                     df_radar,
                     r="Valor Escalado",
@@ -89,15 +95,12 @@ if email:
                     hover_name="Rasgo",
                     hover_data={"Valor": True, "Valor Escalado": False},
                 )
-        
                 fig.update_traces(fill='toself')
-        
                 fig.update_layout(
                     polar=dict(
                         radialaxis=dict(
                             visible=True,
                             range=[0, 1.3],
-                            showline=False,
                             tickfont=dict(size=10)
                         )
                     ),
@@ -107,8 +110,7 @@ if email:
         
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                st.warning("No hay datos para el radar chart.")
-                
+                st.warning("No hay datos válidos para mostrar el radar.")
        #COLUMNA 3---------------------------------
         with col3:
             st.subheader(f"🏆**Total XP:** {xp_total}")
