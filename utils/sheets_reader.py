@@ -51,8 +51,12 @@ def get_gamification_data(email):
     ws_setup = gs.worksheet("Setup")
     niveles = to_df(ws_setup.get("A1:B"))
     game_mode = to_df(ws_setup.get("G1:G"))
-    reward_setup = to_df(ws_setup.get("I1:O"))
-    setup_raw = ws_setup.get("E6:E11")
+    
+    # ✅ Lectura robusta del bloque E6:E11
+    setup_raw = ws_setup.get_values("E6:E11")
+    if len(setup_raw) < 6:
+        raise ValueError("Faltan datos en el rango E6:E11 del Setup")
+
     xp_total = setup_raw[0][0]
     nivel_actual = setup_raw[1][0]
     xp_faltante = setup_raw[2][0]
@@ -69,7 +73,7 @@ def get_gamification_data(email):
         "daily_log": daily_log,
         "niveles": niveles,
         "game_mode": game_mode,
-        "reward_setup": reward_setup,
+        "reward_setup": to_df(ws_setup.get("I1:O")),
         "rewards": rewards,
         "xp_total": xp_total,
         "nivel_actual": nivel_actual,
@@ -79,54 +83,3 @@ def get_gamification_data(email):
         "xp_Mood": xp_Mood,
         "xp_Focus": xp_Focus,
     }
-
-def normalizar_link_drive(link):
-    if not link:
-        return ""
-    match = re.search(r"/d/([a-zA-Z0-9_-]+)", link)
-    if match:
-        file_id = match.group(1)
-        return f"https://drive.google.com/uc?id={file_id}"
-    elif "uc?id=" in link:
-        return link
-    else:
-        return link
-
-def update_avatar_url(email, url):
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
-    client = gspread.authorize(creds)
-
-    sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
-    tab = sheet.worksheet("Registros de Usuarios")
-
-    data = tab.get_all_values()
-    for idx, row in enumerate(data):
-        if row and row[0].strip().lower() == email.strip().lower():
-            tab.update_cell(idx + 1, 9, normalizar_link_drive(url))
-            break
-
-def subir_a_drive_y_obtener_link(local_path, nombre_archivo):
-    scope = ["https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
-    drive_service = build("drive", "v3", credentials=creds)
-
-    folder_ID = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
-    file_metadata = {
-        "name": nombre_archivo,
-        "parents": [folder_ID]
-    }
-    media = MediaFileUpload(local_path, resumable=True)
-    uploaded = drive_service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields="id"
-    ).execute()
-
-    file_id = uploaded.get("id")
-    drive_service.permissions().create(
-        fileId=file_id,
-        body={"role": "reader", "type": "anyone"},
-    ).execute()
-
-    return f"https://drive.google.com/uc?id={file_id}"
