@@ -73,40 +73,60 @@ if email:
         with col2:
             st.subheader("📊 Radar de Rasgos")
         
-            # Extraer Rasgos y TEXPR
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar = df_radar.dropna(subset=["Rasgos", "TEXPR"])
-        
-            # Convertir TEXPR a numérico
             df_radar["TEXPR"] = pd.to_numeric(df_radar["TEXPR"], errors="coerce")
-            df_radar = df_radar.dropna(subset=["TEXPR"])
+            df_radar = df_radar.dropna()
         
             if not df_radar.empty:
-                # Escalado logarítmico suave para balancear visualmente
-                df_radar["Valor Escalado"] = df_radar["TEXPR"].apply(lambda x: (x + 1)**0.5)  # raíz cuadrada suaviza extremos
+                df_radar = pd.concat([df_radar, df_radar.iloc[[0]]], ignore_index=True)
         
-                # Normalizar para que se mantenga en rango [0, 1.3]
-                max_val = df_radar["Valor Escalado"].max()
-                df_radar["Valor Escalado"] = df_radar["Valor Escalado"] / max_val * 1.3 if max_val > 0 else 0
+                # Cálculo del nuevo límite superior del radar
+                max_val = df_radar["TEXPR"].max()
+                limite_superior = round(max_val * 1.3)
         
                 fig = px.line_polar(
                     df_radar,
-                    r="Valor Escalado",
+                    r="TEXPR",
                     theta="Rasgos",
                     line_close=True,
-                    template="simple_white"
+                    template="plotly_dark"
                 )
-                fig.update_traces(fill='toself')
+        
+                fig.update_traces(fill='toself', line_color='royalblue')
+        
+                # Agregar puntos con los valores
+                fig.add_trace(
+                    px.scatter_polar(df_radar, r="TEXPR", theta="Rasgos", text=df_radar["TEXPR"].astype(str)).data[0]
+                )
+        
+                fig.update_traces(
+                    selector=dict(mode='markers+text'),
+                    marker=dict(size=8, color='lightblue'),
+                    textposition="top center",
+                    textfont_size=12
+                )
         
                 fig.update_layout(
                     polar=dict(
+                        bgcolor="black",
                         radialaxis=dict(
-                            range=[0, 1.3],
-                            showticklabels=False,
-                            ticks='',
-                            showline=False
+                            visible=True,
+                            range=[0, limite_superior],
+                            showline=False,
+                            showticklabels=True,
+                            gridcolor="gray",
+                            gridwidth=0.5
+                        ),
+                        angularaxis=dict(
+                            rotation=90,
+                            direction="clockwise",
+                            gridcolor="gray",
+                            gridwidth=0.5
                         )
                     ),
+                    paper_bgcolor="white",
+                    plot_bgcolor="white",
                     margin=dict(t=20, b=20, l=20, r=20),
                     showlegend=False
                 )
