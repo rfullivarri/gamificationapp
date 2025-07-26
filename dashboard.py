@@ -55,26 +55,26 @@ if email:
                     label_visibility="collapsed"
                 )
 
-              if avatar_uploader:
-            file_extension = avatar_uploader.name.split(".")[-1]
-            temp_path = f"/tmp/temp_avatar.{file_extension}"
-        
-            # Guardar archivo temporal
-            with open(temp_path, "wb") as f:
-                f.write(avatar_uploader.read())
-        
-            # Generar nombre final basado en correo
-            nombre_usuario = email.split("@")[0]
-            nombre_limpio = "".join(c for c in nombre_usuario if c.isalnum()).lower()
-            nombre_archivo = f"{nombre_limpio}_avatar.{file_extension}"
-        
-            try:
-                nuevo_link = subir_a_drive_y_obtener_link(temp_path, nombre_archivo)
-                update_avatar_url(email, nuevo_link)
-                st.image(nuevo_link, width=200)
-                st.success("✅ Avatar actualizado. Refrescá la página.")
-            except Exception as e:
-                st.error(f"❌ Error al subir la imagen: {e}")
+            if avatar_uploader:
+                file_extension = avatar_uploader.name.split(".")[-1]
+                temp_path = f"/tmp/temp_avatar.{file_extension}"
+            
+                # Guardar archivo temporal
+                with open(temp_path, "wb") as f:
+                    f.write(avatar_uploader.read())
+            
+                # Generar nombre final basado en correo
+                nombre_usuario = email.split("@")[0]
+                nombre_limpio = "".join(c for c in nombre_usuario if c.isalnum()).lower()
+                nombre_archivo = f"{nombre_limpio}_avatar.{file_extension}"
+            
+                try:
+                    nuevo_link = subir_a_drive_y_obtener_link(temp_path, nombre_archivo)
+                    update_avatar_url(email, nuevo_link)
+                    st.image(nuevo_link, width=200)
+                    st.success("✅ Avatar actualizado. Refrescá la página.")
+                except Exception as e:
+                    st.error(f"❌ Error al subir la imagen: {e}")
 
             # 💠 Estado diario
             st.subheader("💠 Estado diario")
