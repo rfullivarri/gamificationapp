@@ -107,8 +107,11 @@ if email:
             #st.line_chart(df[["XP"]])
 
             # Usar directamente el DataFrame que ya tenés
+            # Convertir fecha y XP correctamente
             data["daily_cultivation"]["Fecha"] = pd.to_datetime(data["daily_cultivation"]["Fecha"])
+            data["daily_cultivation"]["XP"] = pd.to_numeric(data["daily_cultivation"]["XP"], errors="coerce")
             
+            # Crear gráfico
             fig = px.line(
                 data["daily_cultivation"],
                 x="Fecha",
@@ -119,7 +122,7 @@ if email:
             
             fig.update_traces(
                 textposition="top center",
-                line_shape="spline",  # curva suave
+                line_shape="spline",
                 line=dict(width=2),
                 marker=dict(size=6)
             )
@@ -132,9 +135,6 @@ if email:
             )
             
             st.plotly_chart(fig, use_container_width=True)
-
-
-        
 
         # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
         with col3:
