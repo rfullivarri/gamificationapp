@@ -135,19 +135,34 @@ if email:
             else:
                 st.warning("No hay datos para graficar.")
 
-            # 📈 EXP diaria
-            st.markdown("### 📈 Daily Cultivation")
-            daily_log["Fecha"] = pd.to_datetime(daily_log["Fecha"], errors="coerce")
-            daily_log = daily_log.dropna(subset=["Fecha"])
-
-            meses_unicos = sorted(daily_log["Fecha"].dt.strftime("%Y-%m").unique())
-            current_month = pd.to_datetime("today").strftime("%Y-%m")
-            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month))
-
-            df_mes = daily_log[daily_log["Fecha"].dt.strftime("%Y-%m") == mes_seleccionado]
-            df_exp_mes = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
-
-            st.line_chart(df_exp_mes.set_index("Fecha"))
+#---EXP POR DÍA----------------------------------------------------------------------------------------
+                st.markdown("### 📈 Daily Cultivation")
+        
+                df_daily = data["daily_log"].copy()
+        
+                # Asegurar que la columna Fecha es datetime (saltando errores)
+                df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"], errors="coerce")
+                df_daily = df_daily.dropna(subset=["Fecha", "EXP"])
+        
+                # Obtener mes actual y formatearlo
+                today = pd.Timestamp.today()
+                current_month = today.strftime("%Y-%m")
+        
+                # Crear lista de meses únicos
+                df_daily["Mes"] = df_daily["Fecha"].dt.strftime("%Y-%m")
+                meses_unicos = sorted(df_daily["Mes"].dropna().unique())
+        
+                # Selector de mes
+                mes_seleccionado = st.selectbox("📅 Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month) if current_month in meses_unicos else 0)
+        
+                # Filtrar por mes seleccionado
+                df_mes = df_daily[df_daily["Mes"] == mes_seleccionado]
+        
+                # Agrupar por fecha y sumar EXP
+                df_exp_por_dia = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
+        
+                # Mostrar gráfico
+                st.line_chart(df_exp_por_dia.set_index("Fecha"))
 
 # 🏆 COLUMNA 3 – XP Y NIVEL ---------------------------------------------------------
         with col3:
