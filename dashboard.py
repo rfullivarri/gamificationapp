@@ -41,30 +41,39 @@ if email:
 
 # COLUMNA 1 --------------------------------------------------------------------------------------------------------------------------
         with col1:
-            # Si hay imagen previa o subida, mostrarla (sin título, sin caption)
-            if avatar_url or "avatar_path" in locals():
+                # Mostrar avatar actual
                 st.image(avatar_url, width=200)
-
-            # Input silencioso para cambiar imagen (solo el botón, sin nada más)
-            avatar_file = st.file_uploader(
-                label=" ",
-                type=["jpg", "jpeg", "png"],
-                label_visibility="collapsed"
-            )
-
-            # Si se carga una nueva imagen
-            if avatar_file:
-                file_extension = avatar_file.name.split(".")[-1]
-                avatar_path = f"temp_avatar_{uuid.uuid4()}.{file_extension}"
-                with open(avatar_path, "wb") as f:
-                    f.write(avatar_file.read())
-
-                # Mostrar la nueva imagen arriba, reemplazando la anterior
-                st.image(avatar_path, width=200)
-
-                # Actualizar avatar_url para que se mantenga
-                avatar_url = f"https://example.com/{avatar_path}"
-                update_avatar_url(email, avatar_url)
+    
+                # Opción para cambiar imagen (estética minimal)
+                cambiar_avatar = st.checkbox("🖼 Cambiar avatar", key="cambiar_avatar")
+    
+                if cambiar_avatar:
+                    avatar_uploader = st.file_uploader(
+                        label="Subí tu nuevo avatar",
+                        type=["jpg", "jpeg", "png"],
+                        label_visibility="collapsed"
+                    )
+    
+                    if avatar_uploader:
+                        # Guardar temporal
+                        file_extension = avatar_uploader.name.split(".")[-1]
+                        temp_path = f"/tmp/{uuid.uuid4()}.{file_extension}"
+    
+                        with open(temp_path, "wb") as f:
+                            f.write(avatar_uploader.read())
+    
+                        # Subir a Drive y obtener URL
+                        from utils.sheets_reader import subir_a_drive_y_obtener_link
+                        nuevo_link = subir_a_drive_y_obtener_link(temp_path, f"{email}_avatar.{file_extension}")
+    
+                        # Mostrar imagen nueva
+                        st.image(nuevo_link, width=200)
+    
+                        # Actualizar en base
+                        update_avatar_url(email, nuevo_link)
+    
+                        # Aviso y recarga
+                        st.success("✅ Avatar actualizado. Refrescá la página.")
 
 # 💠 Estado diario---------------------------------------------------------------------
             st.subheader("💠 Estado diario")
