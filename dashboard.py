@@ -20,6 +20,15 @@ st.title("🧠 Self-Improvement Dashboard")
 # 📩 Input de correo
 email = st.text_input("📧 Ingresá tu correo electrónico")
 
+if email_input:
+    data = get_gamification_data(email_input)
+    if data:
+        df_daily = data["daily_log"].copy()
+        tabla_principal = data["tabla_principal"]
+        # acá podés seguir con el radar chart y el nuevo gráfico
+    else:
+        st.error("No se encontró tu base de datos. Verificá el correo ingresado.")
+
 if email:
     data = get_gamification_data(email)
 
