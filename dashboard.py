@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 import plotly.express as px
-from utils.sheets_reader import get_gamification_data, update_avatar_url, xp_HP, xp_Mood, xp_Focus
+from utils.sheets_reader import get_gamification_data, update_avatar_url
 import time
 import os
 import uuid
