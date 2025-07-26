@@ -72,9 +72,10 @@ if email:
         with col2:
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
-            df_radar.columns = ["Rasgo", "Valor"]
+            df_radar.columns = ["Rasgo", "TEXPR"]
 
             if not df_radar.empty:
+                df_radar["Valor Escalado"] = df_radar["Valor"] / df_radar["Valor"].max() * 1.3
                 fig = px.line_polar(
                     df_radar,
                     r="Valor Escalado",
