@@ -47,7 +47,7 @@ def get_gamification_data(email):
     acumulados_subconjunto = to_df(ws_bbdd.get("W1:AE"))
 
     ws_daily = gs.worksheet("Daily Log")
-    daily_log = to_df(ws_daily.get("A1:D"))
+    daily_log = to_df(ws_daily.get("A1:E"))
 
     ws_setup = gs.worksheet("Setup")
     niveles = to_df(ws_setup.get("A1:B"))
