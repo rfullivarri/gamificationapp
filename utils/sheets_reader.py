@@ -4,7 +4,6 @@ import re
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 
 def parse_percentage(val):
@@ -23,7 +22,7 @@ def to_df(raw_data):
 
 def get_gamification_data(email):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
     client = gspread.authorize(creds)
 
     base = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
@@ -95,7 +94,7 @@ def normalizar_link_drive(link):
 
 def update_avatar_url(email, url):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
     client = gspread.authorize(creds)
 
     sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
@@ -109,6 +108,8 @@ def update_avatar_url(email, url):
 
 
 def upload_avatar_and_save_url(uploaded_file, email):
+    scope = ["https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
     if uploaded_file:
         # Guardar el archivo temporalmente
         with open(uploaded_file.name, "wb") as f:
@@ -138,6 +139,6 @@ def upload_avatar_and_save_url(uploaded_file, email):
         url = f"https://drive.google.com/file/d/{file_id}/view?usp=drivesdk"
 
         # Guardar en el Sheet
-        update_avatar_url_in_sheet(email, url)
+        update_avatar_url(email, url)
 
         return url
