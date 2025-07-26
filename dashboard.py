@@ -71,11 +71,11 @@ if email:
         #COLUMNA 2---------------------------------------------
         with col2:
             st.subheader("📊 Radar de Rasgos")
-            df_radar = data["acumulados_subconjunto"][["Rasgos", "CP"]].copy()
-            df_radar.columns = ["Rasgo", "Puntaje"]
+            df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
+            df_radar.columns = ["Rasgo", "XP"]
             if not df_radar.empty:
                 fig = px.line_polar(df_radar, r="Puntaje", theta="Rasgo", line_close=True,
-                                    template="plotly_dark", title="Radar de Rasgos")
+                                    template="plotly_dark", title="Rasgos Radar Chart")
                 fig.update_traces(fill='toself')
                 st.plotly_chart(fig, use_container_width=True)
             else:
