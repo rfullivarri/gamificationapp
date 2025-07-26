@@ -75,12 +75,6 @@ if email:
             st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
             st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
             st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
-            st.expander("ℹ️"):
-            st.markdown("""
-                        - HP: XP ganada en este Pilar mantiene tu energía diaria.
-                        - Mood: Refleja tu estado emocional en base a hábitos de Soul.
-                        - Focus: Nivel de claridad mental y atención sostenida.
-                        """)
 
 #COLUMNA 2--------------------------------------------------------------------------------------------------------------
         with col2:
