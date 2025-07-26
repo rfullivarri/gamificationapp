@@ -101,7 +101,10 @@ if email:
                 st.warning("No hay datos para graficar.")
 
             st.subheader("🪴 Daily Cultivation")
-            st.line_chart(data["daily_cultivation"])
+            daily_cultivation["Fecha"] = pd.to_datetime(daily_cultivation["Fecha"])
+            daily_cultivation.set_index("Fecha", inplace=True)
+            st.line_chart(daily_cultivation[["XP"]]) 
+            #st.line_chart(data["daily_cultivation"])
 
         # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
         with col3:
