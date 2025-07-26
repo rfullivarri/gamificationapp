@@ -5,6 +5,7 @@ from utils.sheets_reader import get_gamification_data, update_avatar_url
 import time
 import os
 import uuid
+import pandas as pd
 
 # 🧱 Configuración general
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
