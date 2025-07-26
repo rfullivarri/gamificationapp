@@ -76,14 +76,14 @@ if email:
                         st.success("✅ Avatar actualizado. Refrescá la página.")
 
 # 💠 Estado diario---------------------------------------------------------------------
-            st.subheader("💠 Estado diario")
-            #st.progress(0.75, text="🫀 HP")
-            #st.progress(0.60, text="🏵️ Mood")
-            #st.progress(0.40, text="🧠 Focus")
-
-            st.progress(parse_percentage(xp_HP), text=f"🫀 HP – {int(parse_percentage(xp_HP) * 100)}%")
-            st.progress(parse_percentage(xp_Mood), text=f"🏵️ Mood – {int(parse_percentage(xp_Mood) * 100)}%")
-            st.progress(parse_percentage(xp_Focus), text=f"🧠 Focus – {int(parse_percentage(xp_Focus) * 100)}%")
+                st.subheader("💠 Estado diario")
+                #st.progress(0.75, text="🫀 HP")
+                #st.progress(0.60, text="🏵️ Mood")
+                #st.progress(0.40, text="🧠 Focus")
+    
+                st.progress(parse_percentage(xp_HP), text=f"🫀 HP – {int(parse_percentage(xp_HP) * 100)}%")
+                st.progress(parse_percentage(xp_Mood), text=f"🏵️ Mood – {int(parse_percentage(xp_Mood) * 100)}%")
+                st.progress(parse_percentage(xp_Focus), text=f"🧠 Focus – {int(parse_percentage(xp_Focus) * 100)}%")
 
 #COLUMNA 2--------------------------------------------------------------------------------------------------------------
         with col2:
