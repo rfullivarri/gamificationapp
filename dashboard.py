@@ -73,14 +73,34 @@ if email:
             st.subheader("📊 Radar de Rasgos")
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar.columns = ["Rasgo", "TEXPR"]
+
             if not df_radar.empty:
-                fig = px.line_polar(df_radar, r="TEXPR", theta="Rasgo", line_close=True,
-                                    template="plotly_dark", title="Rasgos Radar Chart")
+                fig = px.line_polar(
+                    df_radar,
+                    r="TEXPR",
+                    theta="Rasgo",
+                    line_close=True,
+                    template="plotly_dark",
+                    title="Rasgos Radar Chart"
+                )
                 fig.update_traces(fill='toself')
+
+                # Invertir eje radial y setear máximo a 1.3
+                fig.update_layout(
+                    polar=dict(
+                        radialaxis=dict(
+                            range=[1.3, 0],  # Invertido: centro = 0, borde = 1.3
+                            tickvals=[0, 0.25, 0.5, 0.75, 1.0, 1.3],
+                            showline=True,
+                            linewidth=1,
+                            gridcolor="gray",
+                        )
+                    )
+                )
+
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No hay datos para el radar chart.")
-
         
        #COLUMNA 3---------------------------------
         with col3:
