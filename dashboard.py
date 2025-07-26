@@ -30,9 +30,6 @@ if email:
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
         avatar_url = data.get("avatar_url") or "https://i.imgur.com/z7nGzGx.png"
-        xp_HP = data["xp_HP"]
-        xp_Mood = data["xp_Mood"]
-        xp_Focus = data["xp_Focus"]
         
 
 # --------------------- LAYOUT A TRES COLUMNAS -----------------------------------------------------------------------------------------
@@ -76,6 +73,10 @@ if email:
                     col1, col2 = st.columns([0.9, 0.1])
                 
                     with col1:
+                        data = get_gamification_data(email)
+                        xp_HP = data["xp_HP"]
+                        xp_Mood = data["xp_Mood"]
+                        xp_Focus = data["xp_Focus"]
                         st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
                         st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
                         st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
