@@ -39,15 +39,23 @@ if email:
         xp_Mood = data["xp_Mood"]
         xp_Focus = data["xp_Focus"]
 
-        # --------------------- LAYOUT A TRES COLUMNAS ---------------------
+# --------------------- LAYOUT A TRES COLUMNAS --------------------------------------------------
         col1, col2, col3 = st.columns([1, 2, 1])
 
-        # 🖼 COLUMNA 1 – AVATAR Y ESTADO -----------------------------------
+# 🖼 COLUMNA 1 – AVATAR Y ESTADO ---------------------------------------------------------
         with col1:
-            st.image(avatar_url, width=200)
+            def es_url_valida(url):
+            return url.startswith("http") and not url.endswith("/")
+
+            # Mostrar avatar solo si es válido
+            if es_url_valida(avatar_url):
+                st.image(avatar_url, width=200)
+            else:
+                st.warning("⚠️ No se encontró avatar válido para este usuario.")
+                        st.image(avatar_url, width=200)
 
             cambiar_avatar = st.checkbox("🖼 Cambiar avatar", key="cambiar_avatar")
-
+            avatar_uploader = None  # inicializá antes
             if cambiar_avatar:
                 avatar_uploader = st.file_uploader(
                     label="Subí tu nuevo avatar",
