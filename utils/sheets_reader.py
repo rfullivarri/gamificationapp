@@ -108,9 +108,11 @@ def update_avatar_url(email, url):
 
 
 def upload_avatar_and_save_url(uploaded_file, email):
-    scope = ["https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
     if uploaded_file:
+        scope = ["https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
+        #creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
+
         # Guardar el archivo temporalmente
         with open(uploaded_file.name, "wb") as f:
             f.write(uploaded_file.getbuffer())
@@ -120,7 +122,7 @@ def upload_avatar_and_save_url(uploaded_file, email):
         folder_ID = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
         file_metadata = {
             "name": uploaded_file.name,
-            "parents": [folder_ID]  # ID de tu carpeta de Drive (tipo "Gamification Life")
+            "parents": [folder_ID]
         }
         media = MediaFileUpload(uploaded_file.name, resumable=True)
         uploaded = drive_service.files().create(
