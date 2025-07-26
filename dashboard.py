@@ -74,13 +74,13 @@ if email:
         
             # Usamos columnas exactas de tu tabla
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
-            df_radar.columns = ["Rasgo", "Valor"]
+            #df_radar.columns = ["Rasgo", "Valor"]
         
             # Convertir valores a numérico
-            df_radar["Valor"] = pd.to_numeric(df_radar["Valor"], errors="coerce")
+            df_radar["Valor"] = pd.to_numeric(df_radar["TEXPR"], errors="coerce")
         
             # Eliminar valores NaN
-            df_radar = df_radar.dropna(subset=["Valor"])
+            df_radar = df_radar.dropna(subset=["TEXPR"])
         
             if not df_radar.empty:
                 max_val = df_radar["Valor"].max()
