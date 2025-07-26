@@ -52,7 +52,7 @@ if email:
                 st.image(avatar_url, width=200)
             else:
                 st.warning("⚠️ No se encontró avatar válido para este usuario.")
-                        st.image(avatar_url, width=200)
+                    st.image(avatar_url, width=200)
 
             cambiar_avatar = st.checkbox("🖼 Cambiar avatar", key="cambiar_avatar")
             avatar_uploader = None  # inicializá antes
