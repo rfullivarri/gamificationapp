@@ -72,9 +72,9 @@ if email:
             #st.progress(0.60, text="🏵️ Mood")
             #st.progress(0.40, text="🧠 Focus")
 
-            st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
-            st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
-            st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
+            st.progress(xp_HP, text=f"🫀 HP – {int(xp_HP * 100)}%")
+            st.progress(xp_Mood, text=f"🏵️ Mood – {int(xp_Mood * 100)}%")
+            st.progress(xp_Focus, text=f"🧠 Focus – {int(xp_Focus * 100)}%")
 
 #COLUMNA 2--------------------------------------------------------------------------------------------------------------
         with col2:
