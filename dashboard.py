@@ -71,7 +71,7 @@ if email:
         #COLUMNA 2---------------------------------------------
         with col2:
             st.subheader("📊 Radar de Rasgos")
-            df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPF"]].copy()
+            df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar.columns = ["Rasgo", "Valor"]
 
             if not df_radar.empty:
