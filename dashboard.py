@@ -45,7 +45,7 @@ if email:
 # 🖼 COLUMNA 1 – AVATAR Y ESTADO ---------------------------------------------------------
         with col1:
             def es_url_valida(url):
-            return url.startswith("http") and not url.endswith("/")
+                return url.startswith("http") and not url.endswith("/")
 
             # Mostrar avatar solo si es válido
             if es_url_valida(avatar_url):
