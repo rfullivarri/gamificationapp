@@ -91,17 +91,33 @@ def get_gamification_data(email):
     }
 
 
+def normalizar_link_drive(link):
+    import re
+    if not link:
+        return ""
+    match = re.search(r"/d/([a-zA-Z0-9_-]+)", link)
+    if match:
+        file_id = match.group(1)
+        return f"https://drive.google.com/uc?id={file_id}"
+    elif "uc?id=" in link:
+        return link
+    else:
+        return link  # fallback
+
 def update_avatar_url(email, url):
     # Autenticación con Google
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
     client = gspread.authorize(creds)
 
-    # Abre el archivo central
     sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
     tab = sheet.worksheet("Registros de Usuarios")
 
     data = tab.get_all_values()
+    for idx, row in enumerate(data):
+        if row and row[0].strip().lower() == email.strip().lower():
+            tab.update_cell(idx + 1, 9, normalizar_link_drive(url))
+            break
 
 
 
@@ -132,3 +148,17 @@ def subir_a_drive_y_obtener_link(local_path, nombre_final):
 
     # URL pública final
     return f"https://drive.google.com/uc?id={file['id']}"
+
+def normalizar_link_drive(link):
+    """Convierte cualquier link de Drive al formato uc?id=ID"""
+    import re
+    if not link:
+        return ""
+    match = re.search(r"/d/([a-zA-Z0-9_-]+)", link)
+    if match:
+        file_id = match.group(1)
+        return f"https://drive.google.com/uc?id={file_id}"
+    elif "uc?id=" in link:
+        return link  # ya está bien
+    else:
+        return link  # lo dejamos por si es otra cosa válida
