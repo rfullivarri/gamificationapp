@@ -77,16 +77,18 @@ if email:
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar = df_radar.dropna(subset=["Rasgos", "TEXPR"])
         
-            # Asegurar que TEXPR sea numérico
+            # Convertir TEXPR a numérico
             df_radar["TEXPR"] = pd.to_numeric(df_radar["TEXPR"], errors="coerce")
             df_radar = df_radar.dropna(subset=["TEXPR"])
         
             if not df_radar.empty:
-                # Normalizamos para que el gráfico no explote visualmente (escala máx 1.3)
-                max_val = df_radar["TEXPR"].max()
-                df_radar["Valor Escalado"] = df_radar["TEXPR"] / max_val * 1.3 if max_val > 0 else 0
+                # Escalado logarítmico suave para balancear visualmente
+                df_radar["Valor Escalado"] = df_radar["TEXPR"].apply(lambda x: (x + 1)**0.5)  # raíz cuadrada suaviza extremos
         
-                # Crear Radar Chart
+                # Normalizar para que se mantenga en rango [0, 1.3]
+                max_val = df_radar["Valor Escalado"].max()
+                df_radar["Valor Escalado"] = df_radar["Valor Escalado"] / max_val * 1.3 if max_val > 0 else 0
+        
                 fig = px.line_polar(
                     df_radar,
                     r="Valor Escalado",
@@ -96,7 +98,6 @@ if email:
                 )
                 fig.update_traces(fill='toself')
         
-                # Opcional: Personalizar eje radial
                 fig.update_layout(
                     polar=dict(
                         radialaxis=dict(
