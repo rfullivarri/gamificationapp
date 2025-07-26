@@ -8,9 +8,7 @@ import pandas as pd
 
 from utils.sheets_reader import (
     get_gamification_data,
-    update_avatar_url,
     parse_percentage,
-    subir_a_drive_y_obtener_link
 )
 
 # 🧱 Configuración general
@@ -46,30 +44,7 @@ if email:
         with col1:
             st.image(avatar_url, width=200)
 
-            cambiar_avatar = st.checkbox("🖼 Cambiar avatar", key="cambiar_avatar")
-
-            if cambiar_avatar:
-                avatar_uploader = st.file_uploader(
-                    label="Subí tu nuevo avatar",
-                    type=["jpg", "jpeg", "png"],
-                    label_visibility="collapsed"
-                )
-
-                if avatar_uploader:
-                    # Guardar imagen temporal
-                    file_extension = avatar_uploader.name.split(".")[-1]
-                    temp_path = f"/tmp/{uuid.uuid4()}.{file_extension}"
-
-                    with open(temp_path, "wb") as f:
-                        f.write(avatar_uploader.read())
-
-                    # Subir a Drive y guardar link
-                    nuevo_link = subir_a_drive_y_obtener_link(temp_path, f"{email}_avatar.{file_extension}")
-                    update_avatar_url(email, nuevo_link)
-
-                    # Mostrar nuevo avatar
-                    st.image(nuevo_link, width=200)
-                    st.success("✅ Avatar actualizado. Refrescá la página.")
+          
 
             # 💠 Estado diario
             st.subheader("💠 Estado diario")
