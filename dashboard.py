@@ -24,13 +24,11 @@ if email:
     data = get_gamification_data(email)
 
     if data:
-        # ✅ Mensaje de carga
         success_message = st.empty()
         success_message.success("✅ Tenemos tus stats!")
         time.sleep(2)
         success_message.empty()
 
-        # 📦 Extraer datos
         xp_total = data["xp_total"]
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
@@ -38,16 +36,15 @@ if email:
         xp_HP = data["xp_HP"]
         xp_Mood = data["xp_Mood"]
         xp_Focus = data["xp_Focus"]
+        daily_log = data["daily_log"]  # 🛠️ ¡CLAVE! Para evitar el error que tenías
 
-# --------------------- LAYOUT A TRES COLUMNAS --------------------------------------------------
         col1, col2, col3 = st.columns([1, 2, 1])
 
-# 🖼 COLUMNA 1 – AVATAR Y ESTADO ---------------------------------------------------------
+        # COLUMNA 1 – AVATAR Y ESTADO
         with col1:
             def es_url_valida(url):
                 return url.startswith("http") and not url.endswith("/")
 
-            # Mostrar avatar solo si es válido
             if es_url_valida(avatar_url):
                 st.image(avatar_url, width=200)
             else:
@@ -55,7 +52,7 @@ if email:
                 st.image(avatar_url, width=200)
 
             cambiar_avatar = st.checkbox("🖼 Cambiar avatar", key="cambiar_avatar")
-            avatar_uploader = None  # inicializá antes
+            avatar_uploader = None
             if cambiar_avatar:
                 avatar_uploader = st.file_uploader(
                     label="Subí tu nuevo avatar",
@@ -66,16 +63,14 @@ if email:
             if avatar_uploader:
                 file_extension = avatar_uploader.name.split(".")[-1]
                 temp_path = f"/tmp/temp_avatar.{file_extension}"
-            
-                # Guardar archivo temporal
+
                 with open(temp_path, "wb") as f:
                     f.write(avatar_uploader.read())
-            
-                # Generar nombre final basado en correo
+
                 nombre_usuario = email.split("@")[0]
                 nombre_limpio = "".join(c for c in nombre_usuario if c.isalnum()).lower()
                 nombre_archivo = f"{nombre_limpio}_avatar.{file_extension}"
-            
+
                 try:
                     nuevo_link = subir_a_drive_y_obtener_link(temp_path, nombre_archivo)
                     update_avatar_url(email, nuevo_link)
@@ -84,16 +79,14 @@ if email:
                 except Exception as e:
                     st.error(f"❌ Error al subir la imagen: {e}")
 
-            # 💠 Estado diario
             st.subheader("💠 Estado diario")
             st.progress(parse_percentage(xp_HP), text=f"🫀 HP – {int(parse_percentage(xp_HP) * 100)}%")
             st.progress(parse_percentage(xp_Mood), text=f"🏵️ Mood – {int(parse_percentage(xp_Mood) * 100)}%")
             st.progress(parse_percentage(xp_Focus), text=f"🧠 Focus – {int(parse_percentage(xp_Focus) * 100)}%")
 
-        # 📊 COLUMNA 2 – RADAR ---------------------------------------------
+        # COLUMNA 2 – RADAR Y EXP DIARIA
         with col2:
             st.subheader("📊 Radar de Rasgos")
-
             df_radar = data["acumulados_subconjunto"][["Rasgos", "TEXPR"]].copy()
             df_radar = df_radar.dropna(subset=["Rasgos", "TEXPR"])
             df_radar["TEXPR"] = pd.to_numeric(df_radar["TEXPR"], errors="coerce")
@@ -137,30 +130,25 @@ if email:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No hay datos para graficar.")
-#---EXP POR DIA----------------------------------------------------------------------------------------
-            st.markdown("### 📈 Daily Cultivation")
-            
-            # Filtrar registros del mes actual
-            today = pd.to_datetime("today")
-            current_month = today.strftime("%Y-%m")
-            df_daily = daily_log.copy()
-            df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"])
-            df_month = df_daily[df_daily["Fecha"].dt.strftime("%Y-%m") == current_month]
-        
-            # Agrupar por fecha y sumar EXP
-            df_exp_diaria = df_month.groupby("Fecha")["EXP"].sum().reset_index()
-        
-            # Mostrar selector de mes
-            meses_unicos = sorted(daily_log["Fecha"].apply(lambda x: x[:7]).unique())
-            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month))
-        
-            df_mes = daily_log[daily_log["Fecha"].str.startswith(mes_seleccionado)]
-            df_mes["Fecha"] = pd.to_datetime(df_mes["Fecha"])
-            df_exp_mes = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
-        
-            st.line_chart(df_exp_mes.set_index("Fecha"))
 
-        # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
+            st.markdown("### 📈 Daily Cultivation")
+
+            # Formatear fechas
+            df_daily = daily_log.copy()
+            df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"], errors="coerce")
+            df_daily = df_daily.dropna(subset=["Fecha"])
+            current_month = pd.to_datetime("today").strftime("%Y-%m")
+
+            # Filtrar por mes seleccionado
+            meses_unicos = sorted(df_daily["Fecha"].dt.strftime("%Y-%m").unique())
+            mes_index = meses_unicos.index(current_month) if current_month in meses_unicos else len(meses_unicos) - 1
+            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=mes_index)
+
+            df_mes = df_daily[df_daily["Fecha"].dt.strftime("%Y-%m") == mes_seleccionado]
+            df_exp_mes = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
+            st.line_chart(df_exp_mes.set_index("Fecha"), use_container_width=True)
+
+        # COLUMNA 3 – NIVELES Y XP
         with col3:
             st.subheader(f"🏆**Total XP:** {xp_total}")
             st.subheader("🎯 Nivel actual")
@@ -171,7 +159,6 @@ if email:
             """, unsafe_allow_html=True)
             st.markdown(f"✨ Te faltan **{xp_faltante} XP** para tu próximo nivel.")
 
-        # 📋 Tabla resumen final
         st.markdown("---")
         st.subheader("📋 Resumen por Subconjunto")
         st.dataframe(data["acumulados_subconjunto"], use_container_width=True)
