@@ -137,6 +137,28 @@ if email:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No hay datos para graficar.")
+#---EXP POR DIA----------------------------------------------------------------------------------------
+            st.markdown("### 📈 Daily Cultivation")
+            
+            # Filtrar registros del mes actual
+            today = pd.to_datetime("today")
+            current_month = today.strftime("%Y-%m")
+            df_daily = daily_log.copy()
+            df_daily["Fecha"] = pd.to_datetime(df_daily["Fecha"])
+            df_month = df_daily[df_daily["Fecha"].dt.strftime("%Y-%m") == current_month]
+        
+            # Agrupar por fecha y sumar EXP
+            df_exp_diaria = df_month.groupby("Fecha")["EXP"].sum().reset_index()
+        
+            # Mostrar selector de mes
+            meses_unicos = sorted(daily_log["Fecha"].apply(lambda x: x[:7]).unique())
+            mes_seleccionado = st.selectbox("Seleccioná el mes:", meses_unicos, index=meses_unicos.index(current_month))
+        
+            df_mes = daily_log[daily_log["Fecha"].str.startswith(mes_seleccionado)]
+            df_mes["Fecha"] = pd.to_datetime(df_mes["Fecha"])
+            df_exp_mes = df_mes.groupby("Fecha")["EXP"].sum().reset_index()
+        
+            st.line_chart(df_exp_mes.set_index("Fecha"))
 
         # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
         with col3:
