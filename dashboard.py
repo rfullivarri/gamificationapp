@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 import plotly.express as px
-from utils.sheets_reader import get_gamification_data, update_avatar_url
+from utils.sheets_reader import get_gamification_data, update_avatar_url, parse_percentage
 import time
 import os
 import uuid
@@ -72,9 +72,9 @@ if email:
             #st.progress(0.60, text="🏵️ Mood")
             #st.progress(0.40, text="🧠 Focus")
 
-            st.progress(xp_HP, text=f"🫀 HP – {int(xp_HP * 100)}%")
-            st.progress(xp_Mood, text=f"🏵️ Mood – {int(xp_Mood * 100)}%")
-            st.progress(xp_Focus, text=f"🧠 Focus – {int(xp_Focus * 100)}%")
+            st.progress(parse_percentage(xp_HP), text=f"🫀 HP – {int(parse_percentage(xp_HP) * 100)}%")
+            st.progress(parse_percentage(xp_Mood), text=f"🏵️ Mood – {int(parse_percentage(xp_Mood) * 100)}%")
+            st.progress(parse_percentage(xp_Focus), text=f"🧠 Focus – {int(parse_percentage(xp_Focus) * 100)}%")
 
 #COLUMNA 2--------------------------------------------------------------------------------------------------------------
         with col2:
