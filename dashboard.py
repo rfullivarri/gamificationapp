@@ -30,6 +30,9 @@ if email:
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
         avatar_url = data.get("avatar_url") or "https://i.imgur.com/z7nGzGx.png"
+        xp_HP = data["xp_HP"]
+        xp_Mood = data["xp_Mood"]
+        xp_Focus = data["xp_Focus"]
         
 
 # --------------------- LAYOUT A TRES COLUMNAS -----------------------------------------------------------------------------------------
@@ -63,7 +66,7 @@ if email:
                 avatar_url = f"https://example.com/{avatar_path}"
                 update_avatar_url(email, avatar_url)
 
-            # 💠 Estado diario
+# 💠 Estado diario---------------------------------------------------------------------
             #st.subheader("💠 Estado diario")
             #st.progress(0.75, text="🫀 HP")
             #st.progress(0.60, text="🏵️ Mood")
