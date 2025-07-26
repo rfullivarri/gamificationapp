@@ -30,30 +30,11 @@ if email:
         nivel_actual = data["nivel_actual"]
         xp_faltante = data["xp_faltante"]
         avatar_url = data.get("avatar_url") or "https://i.imgur.com/z7nGzGx.png"
-        
-# 💠 Estado diario ---------------------------------------------------------------------
-st.markdown("## 💠 Estado diario")
-
-with st.container():
-    col_estado, col_info = st.columns([0.9, 0.1])
-
-    with col_estado:
         xp_HP = data["xp_HP"]
         xp_Mood = data["xp_Mood"]
         xp_Focus = data["xp_Focus"]
-
-        st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
-        st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
-        st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
-
-    with col_info:
-        with st.expander("ℹ️"):
-            st.markdown("""
-            - *HP*: XP ganada en este Pilar mantiene tu energía diaria.
-            - *Mood*: Refleja tu estado emocional en base a hábitos de Soul.
-            - *Focus*: Nivel de claridad mental y atención sostenida.
-            """)
         
+
 # --------------------- LAYOUT A TRES COLUMNAS -----------------------------------------------------------------------------------------
     
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -86,29 +67,20 @@ with st.container():
                 update_avatar_url(email, avatar_url)
 
 # 💠 Estado diario---------------------------------------------------------------------
-            #st.subheader("💠 Estado diario")
+            st.subheader("💠 Estado diario")
             #st.progress(0.75, text="🫀 HP")
             #st.progress(0.60, text="🏵️ Mood")
             #st.progress(0.40, text="🧠 Focus")
-            
-                with st.container():
-                    col_estado, col_info = st.columns([0.9, 0.1])
-                    with col_estado:
-                        xp_HP = data["xp_HP"]
-                        xp_Mood = data["xp_Mood"]
-                        xp_Focus = data["xp_Focus"]
-                
-                        st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
-                        st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
-                        st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
-                
-                    with col_info:
-                        with st.expander("ℹ️"):
-                            st.markdown("""
-                            - HP: XP ganada en este Pilar mantiene tu energía diaria.
-                            - Mood: Refleja tu estado emocional en base a hábitos de Soul.
-                            - Focus: Nivel de claridad mental y atención sostenida.
-                            """)
+
+            st.progress(xp_HP, text=f"🫀 HP – {xp_HP:.1%}")
+            st.progress(xp_Mood, text=f"🏵️ Mood – {xp_Mood:.1%}")
+            st.progress(xp_Focus, text=f"🧠 Focus – {xp_Focus:.1%}")
+            st.expander("ℹ️"):
+            st.markdown("""
+                        - HP: XP ganada en este Pilar mantiene tu energía diaria.
+                        - Mood: Refleja tu estado emocional en base a hábitos de Soul.
+                        - Focus: Nivel de claridad mental y atención sostenida.
+                        """)
 
 #COLUMNA 2--------------------------------------------------------------------------------------------------------------
         with col2:
