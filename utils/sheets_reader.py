@@ -106,41 +106,27 @@ def update_avatar_url(email, url):
             tab.update_cell(idx + 1, 9, normalizar_link_drive(url))
             break
 
+def subir_a_drive_y_obtener_link(local_path, nombre_archivo):
+    scope = ["https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
+    drive_service = build("drive", "v3", credentials=creds)
 
-def upload_avatar_and_save_url(uploaded_file, email):
-    if uploaded_file:
-        scope = ["https://www.googleapis.com/auth/drive"]
-        creds = Credentials.from_service_account_info(st.secrets["google_service_account"], scopes=scope)
-        #creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
+    folder_ID = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
+    file_metadata = {
+        "name": nombre_archivo,
+        "parents": [folder_ID]
+    }
+    media = MediaFileUpload(local_path, resumable=True)
+    uploaded = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields="id"
+    ).execute()
 
-        # Guardar el archivo temporalmente
-        with open(uploaded_file.name, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+    file_id = uploaded.get("id")
+    drive_service.permissions().create(
+        fileId=file_id,
+        body={"role": "reader", "type": "anyone"},
+    ).execute()
 
-        # Subir a Google Drive
-        drive_service = build("drive", "v3", credentials=creds)
-        folder_ID = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
-        file_metadata = {
-            "name": uploaded_file.name,
-            "parents": [folder_ID]
-        }
-        media = MediaFileUpload(uploaded_file.name, resumable=True)
-        uploaded = drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields="id"
-        ).execute()
-
-        file_id = uploaded.get("id")
-
-        # Generar link compartible
-        drive_service.permissions().create(
-            fileId=file_id,
-            body={"role": "reader", "type": "anyone"},
-        ).execute()
-        url = f"https://drive.google.com/file/d/{file_id}/view?usp=drivesdk"
-
-        # Guardar en el Sheet
-        update_avatar_url(email, url)
-
-        return url
+    return f"https://drive.google.com/uc?id={file_id}"
