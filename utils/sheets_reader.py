@@ -70,7 +70,10 @@ def get_gamification_data(email):
         "xp_total": xp_total,
         "nivel_actual": nivel_actual,
         "xp_faltante": xp_faltante,
-        "avatar_url": avatar_url
+        "avatar_url": avatar_url,
+        "xp_HP": xp_HP,
+        "xp_Mood": xp_Mood,
+        "xp_Focus": xp_Focus    
     }
 
 
