@@ -90,7 +90,7 @@ if email:
                     r="TEXPR",
                     theta="Rasgos",
                     line_close=True,
-                    template="plotly_dark"
+                    template="seaborn"
                 )
         
                 fig.update_traces(fill='toself', line_color='royalblue')
@@ -109,7 +109,7 @@ if email:
         
                 fig.update_layout(
                     polar=dict(
-                        bgcolor="black",
+                        bgcolor="#f0f0f0",
                         radialaxis=dict(
                             visible=True,
                             range=[0, limite_superior],
@@ -125,7 +125,7 @@ if email:
                             gridwidth=0.5
                         )
                     ),
-                    paper_bgcolor="white",
+                    paper_bgcolor="#f7f7f7",
                     plot_bgcolor="white",
                     margin=dict(t=20, b=20, l=20, r=20),
                     showlegend=False
