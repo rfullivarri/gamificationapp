@@ -47,7 +47,7 @@ def get_gamification_data(email):
 
 # Función auxiliar para convertir a DataFrame con headers correctos
 def to_df(raw_data):
-        return pd.DataFrame(raw_data[1:], columns=raw_data[0])
+    return pd.DataFrame(raw_data[1:], columns=raw_data[0])
 
     # Leer hojas y rangos específicos
     ws_bbdd = gs.worksheet("BBDD")
@@ -87,8 +87,7 @@ def to_df(raw_data):
         "avatar_url": avatar_url,
         "xp_HP": xp_HP,
         "xp_Mood": xp_Mood,
-        "xp_Focus": xp_Focus,   
-    }
+        "xp_Focus": xp_Focus, }
 
 
 def normalizar_link_drive(link):
@@ -124,8 +123,7 @@ def subir_a_drive_y_obtener_link(local_path, nombre_final):
     # Autenticación con Google Drive (usando googleapiclient)
     creds = Credentials.from_service_account_info(
         st.secrets["google_service_account"],
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
+        scopes=["https://www.googleapis.com/auth/drive"] )
 
     drive_service = build("drive", "v3", credentials=creds)
 
