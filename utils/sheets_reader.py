@@ -53,7 +53,7 @@ def get_gamification_data(email):
     xp_faltante = setup_raw[2][0]     # E8
     xp_HP = setup_raw[4][0]     # E10
     xp_Mood = setup_raw[5][0]     # E11
-    xp_Focus = setup_raw[5][0]     # E12
+    xp_Focus = setup_raw[6][0]     # E12
     
     ws_rewards = gs.worksheet("Recompensas")
     rewards = to_df(ws_rewards.get("A1:H"))
