@@ -100,6 +100,9 @@ if email:
             else:
                 st.warning("No hay datos para graficar.")
 
+                st.subheader("🪴 Daily Cultivation")
+                st.line_chart(data["daily_cultivation"])
+
         # 🏆 COLUMNA 3 – NIVELES Y XP --------------------------------------
         with col3:
             st.subheader(f"🏆**Total XP:** {xp_total}")
