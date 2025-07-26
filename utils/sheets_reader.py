@@ -1,6 +1,9 @@
 import gspread
 import pandas as pd
 import re
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
@@ -99,7 +102,33 @@ def update_avatar_url(email, url):
     tab = sheet.worksheet("Registros de Usuarios")
 
     data = tab.get_all_values()
-    for idx, row in enumerate(data):
-        if row and row[0].strip().lower() == email.strip().lower():
-            tab.update_cell(idx + 1, 9, url)  # Columna I = 9
-            break
+
+
+
+def subir_a_drive_y_obtener_link(local_path, nombre_final):
+    # Autenticación con Google Drive (usando googleapiclient)
+    creds = Credentials.from_service_account_info(
+        st.secrets["google_service_account"],
+        scopes=["https://www.googleapis.com/auth/drive"]
+    )
+
+    drive_service = build("drive", "v3", credentials=creds)
+
+    folder_id = "1y9UeK80kPNJF1ejpB_L450D8-Zk84s2d"
+
+    # Subida del archivo
+    file_metadata = {
+        "name": nombre_final,
+        "parents": [folder_id]
+    }
+    media = MediaFileUpload(local_path, resumable=True)
+    file = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+
+    # Permiso público
+    drive_service.permissions().create(
+        fileId=file["id"],
+        body={"type": "anyone", "role": "reader"},
+    ).execute()
+
+    # URL pública final
+    return f"https://drive.google.com/uc?id={file['id']}"
