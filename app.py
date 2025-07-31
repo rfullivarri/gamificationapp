@@ -71,7 +71,7 @@ if email:
             setup_ws = ss.worksheet("Setup")
 
             # Cargar BBDD
-            data = bbdd_ws.get_all_values()
+            data = bbdd_ws.get_range("A1:E" + str(bbdd_ws.row_count)).get_values()
             headers, rows = data[0], data[1:]
             df_actual = pd.DataFrame(rows, columns=headers)
 
