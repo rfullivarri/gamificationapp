@@ -1,29 +1,28 @@
-import json
 import streamlit as st
 import pandas as pd
 import gspread
-import requests
 from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
+import hashlib
+import requests
 
-def enviar_formulario_bobo(email_usuario):
+# Función para simular envío al formulario BOBO
+def enviar_formulario_bobo():
     url_formulario = "https://docs.google.com/forms/d/e/1FAIpQLScS9L8mDIa934tEhkmnq0O7LhVat-9mrL6O6GOec-7JlK7tXQ/formResponse"
-    
     data = {
-        "entry.1871872872": "Sí"  # Marcamos el checkbox de forma automática
+        "entry.1871872872": "Sí"
     }
-
     response = requests.post(url_formulario, data=data)
-    
     if response.status_code in [200, 302]:
         print("✅ Formulario BOBO enviado correctamente.")
     else:
         print(f"❌ Error al enviar formulario BOBO: {response.status_code}")
 
-# Configuración general
+# Configuración
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
 st.title("🎮 Gamification Dashboard")
 
-# ✨ Mensaje gamer motivador
+# Mensaje motivador
 st.markdown("""
 > 🛠️ **Revisá tu tabla de tasks:**  
 > Pulí tus misiones diarias. Editá, reemplazá o eliminá lo que no te sirva.  
@@ -31,8 +30,8 @@ st.markdown("""
 > ¡Hacé que cada task valga XP real! 💪
 """)
 
-# 📝 Nota estilo Notion
-st.markdown("""
+# Nota Notion
+st.markdown('''
 <div style="background-color:#f0f0f0; padding:15px; border-radius:8px; border-left:4px solid #999">
 <b>📌 IMPORTANTE – Cómo deben ser tus Tasks</b><br>
 ✔️ Que puedas completarlas en un solo día.<br>
@@ -41,126 +40,83 @@ st.markdown("""
 🎯 Mejor: “Preparar una comida saludable” o “Meditar 10 minutos”.<br>
 ♻️ Ideal si podés repetirlas cada semana.
 </div>
-""", unsafe_allow_html=True)
+''', unsafe_allow_html=True)
 
-# Conexión a Google Sheets
+# Autenticación
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
 client = gspread.authorize(credentials)
 
-# Ingreso del usuario
-email_input = st.text_input("📧 Ingresá tu correo electrónico para acceder a tu base de datos personalizada:")
+# Función hash para detectar cambios
+def generar_hash_bbdd(df):
+    raw = df.astype(str).apply(lambda x: ''.join(x), axis=1).sum()
+    return hashlib.md5(raw.encode()).hexdigest()
 
-if email_input:
+# Ingreso
+email = st.text_input("📧 Ingresá tu correo electrónico para acceder a tu base de datos personalizada:")
+
+if email:
     try:
-        # Acceso al registro de usuarios
-        registro_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
-        registros = registro_sheet.get_all_records()
-        df_registro = pd.DataFrame(registros)
+        form_intro = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)")
+        registros_ws = form_intro.worksheet("Registros de Usuarios")
+        registros = registros_ws.get_all_records()
+        fila_usuario = next((r for r in registros if r["Email"].strip().lower() == email.strip().lower()), None)
 
-        fila_usuario = df_registro[df_registro["Email"].str.strip().str.lower() == email_input.strip().lower()]
-
-        if fila_usuario.empty:
+        if not fila_usuario:
             st.error("❌ No se encontró ninguna base de datos asociada a este correo.")
         else:
-            # Cargar datos del usuario
-            sheet_url = fila_usuario.iloc[0]["GoogleSheetID"]
-            sheet_id = sheet_url.split("/d/")[1].split("/")[0]
-            sheet = client.open_by_key(sheet_id).worksheet("BBDD")
+            sheet_id = fila_usuario["GoogleSheetID"].split("/d/")[1].split("/")[0]
+            ss = client.open_by_key(sheet_id)
+            bbdd_ws = ss.worksheet("BBDD")
+            setup_ws = ss.worksheet("Setup")
 
-            all_data = sheet.get_all_values()
-            df = pd.DataFrame(all_data[1:], columns=all_data[0])
-            df = df.iloc[:, :5]  # Mostrar solo columnas A-E
+            # Cargar BBDD
+            data = bbdd_ws.get_all_values()
+            headers, rows = data[0], data[1:]
+            df_actual = pd.DataFrame(rows, columns=headers)
 
-            # Contenedor visual con fondo gris
-            st.markdown("""
-            <div style="background-color:#f7f7f7; padding:20px; border-radius:10px; border: 1px solid #e0e0e0; margin-top:20px; margin-bottom:20px;">
-            <h4 style="margin-top: 0;">🧾 Tu tabla de tasks:</h4>
-            """, unsafe_allow_html=True)
+            st.markdown("## 🧾 Tu tabla de tasks")
+            st.markdown("> Revisa tus tasks y edítalas o elimínalas para que se ajusten a tus objetivos.")
 
-            edited_df = st.data_editor(
-                df,
-                use_container_width=True,
-                num_rows="dynamic",
-                key="editor",
-                hide_index=True
-            )
+            df_editado = st.data_editor(df_actual, num_rows="dynamic", use_container_width=True)
 
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            # Botón para guardar cambios
             if st.button("✅ Confirmar edición"):
-                try:
-                    # Guardar la nueva tabla sin romper columnas a la derecha
-                    new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
-                    num_filas_nuevas = len(new_data)
-                    # 1. Limpiar SOLO A2:E sin afectar fórmulas
-                    sheet.batch_update([{
-                        "range": f"A2:E{sheet.row_count}",
-                        "values": [[""] * 5 for _ in range(sheet.row_count - 1)]
-                    }])
-                    # 2. Pegar encabezado
-                    sheet.update("A1:E1", [new_data[0]])
-                    # 3. Pegar fila por fila a partir de A2
-                    for i, fila in enumerate(new_data[1:], start=2):
-                        rango_fila = f"A{i}:E{i}"
-                        sheet.update(rango_fila, [fila])
-                    st.success("✅ BBDD modificada y guardada.")
+                hash_original = generar_hash_bbdd(df_actual)
+                hash_nuevo = generar_hash_bbdd(df_editado)
 
-                    # ✅ Confirmar en el archivo de registros directamente
-                    try:
-                        registros_sheet = client.open("FORMULARIO INTRO  SELF IMPROVEMENT JOURNEY (respuestas)").worksheet("Registros de Usuarios")
-                        registros_data = registros_sheet.get_all_values()
+                if hash_original == hash_nuevo:
+                    setup_ws.update_acell("E14", "constante")
+                    st.success("✅ No hubo cambios. Tu base sigue igual.")
+                else:
+                    setup_ws.update_acell("E14", "modificada")
+                    tareas_anteriores = set(df_actual["Task"])
+                    tareas_nuevas = set(df_editado["Task"])
+                    tareas_logradas = tareas_anteriores - tareas_nuevas
 
-                        encontrado = False
-                        for idx, fila in enumerate(registros_data[1:], start=2):  # Saltear encabezado
-                            correo_col_a = fila[0].strip().lower()
-                            if correo_col_a == email_input.strip().lower():
-                                # ✍️ Guardar el correo en columna G (índice 7)
-                                registros_sheet.update_cell(idx, 7, email_input)
+                    if tareas_logradas:
+                        habitos_ws = ss.worksheet("Habitos Logrados")
+                        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        nuevas_filas = [[timestamp, tarea] for tarea in tareas_logradas]
+                        habitos_ws.append_rows(nuevas_filas)
 
-                                # ✅ Confirmar la BBDD en columna F (índice 6)
-                                registros_sheet.update_cell(idx, 6, "SI")
+                    # Reemplazar hoja BBDD
+                    bbdd_ws.clear()
+                    bbdd_ws.append_row(headers)
+                    bbdd_ws.append_rows(df_editado.values.tolist())
 
-                                enviar_formulario_bobo(email_input)
-                                st.success("✅ Estamos configurando tu Daily Quest")
-                                
-                                dashboard_url = f"https://charlybonet.github.io/dashboard.html?email={email_input.strip()}"
-                                st.markdown(f"""
-                                <style>
-                                .custom-button {{
-                                  background-color: #7e3ff2;
-                                  color: white;
-                                  padding: 12px 24px;
-                                  border: none;
-                                  border-radius: 8px;
-                                  text-decoration: none;
-                                  font-weight: bold;
-                                  display: inline-block;
-                                  margin-top: 20px;
-                                }}
-                                .custom-button:hover {{
-                                  background-color: #5e2bbd;
-                                }}
-                                </style>
-                                
-                                <a href="{dashboard_url}" target="_blank" class="custom-button">
-                                🎮 Ir a tu Dashboard
-                                </a>
-                                """, unsafe_allow_html=True)
-                                encontrado = True
-                                break
+                    # Confirmar en registros y lanzar BOBO
+                    for idx, fila in enumerate(registros, start=2):
+                        if fila["Email"].strip().lower() == email.strip().lower():
+                            registros_ws.update_cell(idx, 6, "SI")  # columna F
+                            registros_ws.update_cell(idx, 7, email) # columna G
+                            break
 
-                        if not encontrado:
-                            st.warning("⚠️ No se encontró el correo en Registros de Usuarios.")
-
-                    except Exception as e:
-                        st.error(f"❌ Error al confirmar en Registros de Usuarios: {e}")
-
-                except Exception as e:
-                    st.error(f"❌ Error al guardar o confirmar: {e}")
+                    enviar_formulario_bobo()
+                    st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
+                    dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboard.html?email={email.strip()}"
+                    st.markdown(f'<a href="{dashboard_url}" target="_blank" class="custom-button">🎮 Volver a tu Dashboard</a>', unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"⚠️ Error al cargar los datos: {e}")
+        st.error(f"❌ Error al cargar o guardar los datos: {e}")
 
 
