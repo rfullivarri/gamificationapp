@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import gspread
@@ -5,6 +6,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 import hashlib
 import requests
+from gspread.utils import rowcol_to_a1
 
 # Función para simular envío al formulario BOBO
 def enviar_formulario_bobo():
@@ -97,9 +99,7 @@ if email:
                     if tareas_logradas:
                         habitos_ws = ss.worksheet("Habitos Logrados")
                         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                        
                         columnas = df_actual.columns.tolist()
-                        
                         nuevas_filas = []
                         for tarea in tareas_logradas:
                             fila = df_actual[df_actual["Tasks"] == tarea]
@@ -112,20 +112,22 @@ if email:
                                     fila_data["Stats"],
                                     fila_data["Tasks"],
                                     fila_data["Dificultad"],
-                                    fila_data["#EXP"] if "#EXP" in columnas else 0
+                                    fila_data["EXP"] if "EXP" in columnas else 0
                                 ])
                         habitos_ws.append_rows(nuevas_filas)
 
-                    # Reemplazar hoja BBDD
-                    bbdd_ws.clear()
-                    bbdd_ws.append_row(headers)
-                    bbdd_ws.append_rows(df_editado.values.tolist())
+                    # Reemplazar SOLO columnas A a E en la hoja BBDD
+                    num_filas = bbdd_ws.row_count
+                    rango_a_e = f"A2:E{num_filas}"
+                    bbdd_ws.batch_clear([rango_a_e])
+                    bbdd_ws.update("A1:E1", [["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
+                    bbdd_ws.update("A2", df_editado.values.tolist())
 
                     # Confirmar en registros y lanzar BOBO
                     for idx, fila in enumerate(registros, start=2):
                         if fila["Email"].strip().lower() == email.strip().lower():
-                            registros_ws.update_cell(idx, 6, "SI")  # columna F
-                            registros_ws.update_cell(idx, 7, email) # columna G
+                            registros_ws.update_cell(idx, 6, "SI")
+                            registros_ws.update_cell(idx, 7, email)
                             break
 
                     enviar_formulario_bobo()
@@ -135,5 +137,3 @@ if email:
 
     except Exception as e:
         st.error(f"❌ Error al cargar o guardar los datos: {e}")
-
-
