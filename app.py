@@ -89,14 +89,30 @@ if email:
                     st.success("✅ No hubo cambios. Tu base sigue igual.")
                 else:
                     setup_ws.update_acell("E14", "modificada")
-                    tareas_anteriores = set(df_actual["Task"])
-                    tareas_nuevas = set(df_editado["Task"])
+                    tareas_anteriores = set(df_actual["Tasks"])
+                    tareas_nuevas = set(df_editado["Tasks"])
                     tareas_logradas = tareas_anteriores - tareas_nuevas
 
                     if tareas_logradas:
                         habitos_ws = ss.worksheet("Habitos Logrados")
                         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                        nuevas_filas = [[timestamp, tarea] for tarea in tareas_logradas]
+                        
+                        columnas = df_actual.columns.tolist()
+                        
+                        nuevas_filas = []
+                        for tarea in tareas_logradas:
+                            fila = df_actual[df_actual["Tasks"] == tarea]
+                            if not fila.empty:
+                                fila_data = fila.iloc[0]
+                                nuevas_filas.append([
+                                    timestamp,
+                                    fila_data["Pilar"],
+                                    fila_data["Rasgo"],
+                                    fila_data["Stats"],
+                                    fila_data["Tasks"],
+                                    fila_data["Dificultad"],
+                                    fila_data["#EXP"] if "#EXP" in columnas else 0
+                                ])
                         habitos_ws.append_rows(nuevas_filas)
 
                     # Reemplazar hoja BBDD
