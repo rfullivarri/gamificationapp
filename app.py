@@ -145,8 +145,22 @@ if email:
             st.markdown("<br>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns([1, 0.5, 1])
             with col2:
-                if st.button("🎮 Volver a tu Dashboard"):
-                    js = f"window.open('https://rfullivarri.github.io/gamificationweblanding/dashboard.html?email={email.strip()}', '_blank')"
-                    components.html(f"<script>{js}</script>", height=0)       
+                st.markdown(f"""
+                <div style="text-align: center;">
+                    <a href="{dashboard_url}" target="_blank" style="
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background-color: #6c63ff;
+                        color: white;
+                        border-radius: 6px;
+                        text-decoration: none;
+                        font-weight: bold;
+                        transition: background-color 0.3s;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    ">
+                        🎮 Volver a tu Dashboard
+                    </a>
+                </div>
+                """, unsafe_allow_html=True)       
     except Exception as e:
         st.error(f"❌ Error al cargar o guardar los datos: {e}")
