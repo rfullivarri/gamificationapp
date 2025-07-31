@@ -79,12 +79,12 @@ if email:
             df_actual = pd.DataFrame(rows, columns=headers)
             df_visible = df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]]
 
-            st.markdown("## 🧾 Tu tabla de tasks")
+            st.markdown("## 🧾 Tasks")
             st.markdown("> Revisa tus tasks y edítalas o elimínalas para que se ajusten a tus objetivos.")
 
             df_editado = st.data_editor(df_visible, num_rows="dynamic", use_container_width=True)
 
-            if st.button("✅ Confirmar edición"):
+            if st.button("✅ Confirmar cambios"):
                 hash_original = generar_hash_bbdd(df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
                 hash_nuevo = generar_hash_bbdd(df_editado)
 
