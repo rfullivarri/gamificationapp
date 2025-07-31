@@ -91,17 +91,21 @@ if email_input:
             # Botón para guardar cambios
             if st.button("✅ Confirmar edición"):
                 try:
-                    # Guardar la nueva tabla (solo A:E)
+                    # Guardar la nueva tabla sin romper columnas a la derecha
                     new_data = [edited_df.columns.tolist()] + edited_df.values.tolist()
-                    num_rows = len(new_data)
-                    rango = f"A1:E{num_rows}"
-
+                    num_filas_nuevas = len(new_data)
+                    # 1. Limpiar SOLO A2:E sin afectar fórmulas
                     sheet.batch_update([{
-                        "range": rango,
-                        "values": new_data
+                        "range": f"A2:E{sheet.row_count}",
+                        "values": [[""] * 5 for _ in range(sheet.row_count - 1)]
                     }])
-
-                    st.success("✅ Cambios guardados correctamente.")
+                    # 2. Pegar encabezado
+                    sheet.update("A1:E1", [new_data[0]])
+                    # 3. Pegar fila por fila a partir de A2
+                    for i, fila in enumerate(new_data[1:], start=2):
+                        rango_fila = f"A{i}:E{i}"
+                        sheet.update(rango_fila, [fila])
+                    st.success("✅ BBDD modificada y guardada.")
 
                     # ✅ Confirmar en el archivo de registros directamente
                     try:
@@ -119,7 +123,7 @@ if email_input:
                                 registros_sheet.update_cell(idx, 6, "SI")
 
                                 enviar_formulario_bobo(email_input)
-                                st.success("📬 Confirmación registrada correctamente en Registros de Usuarios.")
+                                st.success("✅ Estamos configurando tu Daily Quest")
                                 encontrado = True
                                 break
 
