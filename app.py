@@ -143,7 +143,7 @@ if email:
                     st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
             # Botón "Volver al Dashboard" centrado como el de Confirmar edición
             st.markdown("<br>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 2, 1])
+            col1, col2, col3 = st.columns([1, 0.5, 1])
             with col2:
                 if st.button("🎮 Volver a tu Dashboard"):
                     js = f"window.open('https://rfullivarri.github.io/gamificationweblanding/dashboard.html?email={email.strip()}', '_blank')"
