@@ -1,5 +1,6 @@
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -140,24 +141,12 @@ if email:
 
                     enviar_formulario_bobo()
                     st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
-            dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboard.html?email={email.strip()}"
-            st.markdown(f"""
-                <style>
-                    .custom-button {{
-                        display: inline-block;
-                        padding: 10px 20px;
-                        background-color: #6c63ff;
-                        color: white;
-                        border-radius: 6px;
-                        text-decoration: none;
-                        font-weight: bold;
-                        transition: background-color 0.3s;
-                     }}
-                     .custom-button:hover {{
-                        background-color: #5548d8;
-                     }}
-                </style>
-                <a href="{dashboard_url}" target="_blank" class="custom-button">🎮 Volver a tu Dashboard</a>
-            """, unsafe_allow_html=True)       
+            # Botón "Volver al Dashboard" centrado como el de Confirmar edición
+            st.markdown("<br>", unsafe_allow_html=True)
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                if st.button("🎮 Volver a tu Dashboard"):
+                    js = f"window.open('https://rfullivarri.github.io/gamificationweblanding/dashboard.html?email={email.strip()}', '_blank')"
+                    components.html(f"<script>{js}</script>", height=0)       
     except Exception as e:
         st.error(f"❌ Error al cargar o guardar los datos: {e}")
