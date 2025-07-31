@@ -150,14 +150,15 @@ if email:
                 <div style="text-align: center;">
                     <a href="{dashboard_url}" target="_blank" style="
                         display: inline-block;
-                        padding: 12px 24px;
+                        padding: 8px 18px;
                         background-color: #6c63ff;
                         color: white;
                         border-radius: 6px;
                         text-decoration: none;
                         font-weight: bold;
                         transition: background-color 0.3s;
-                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        font-size: 14px;
                     ">
                         🎮 Volver a tu Dashboard
                     </a>
