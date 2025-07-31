@@ -22,7 +22,7 @@ def enviar_formulario_bobo():
 
 # Configuración
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
-st.title("🎮 Gamification Dashboard")
+st.title("🪄 Configuarion BBDD & Daily Quest")
 
 # Mensaje motivador
 st.markdown("""
@@ -105,6 +105,14 @@ if email:
                             fila = df_actual[df_actual["Tasks"] == tarea]
                             if not fila.empty:
                                 fila_data = fila.iloc[0]
+                    
+                                # ✅ Asegurar que XP es número entero, sin comillas
+                                xp = fila_data["EXP"] if "EXP" in columnas else 0
+                                try:
+                                    xp = int(float(xp))  # Convierte incluso si viene como "11.0"
+                                except:
+                                    xp = 0
+                    
                                 nuevas_filas.append([
                                     timestamp,
                                     fila_data["Pilares"],
@@ -112,7 +120,7 @@ if email:
                                     fila_data["Stats"],
                                     fila_data["Tasks"],
                                     fila_data["Dificultad"],
-                                    fila_data["EXP"] if "EXP" in columnas else 0
+                                    xp
                                 ])
                         habitos_ws.append_rows(nuevas_filas)
 
@@ -133,7 +141,24 @@ if email:
                     enviar_formulario_bobo()
                     st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
                     dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboard.html?email={email.strip()}"
-                    st.markdown(f'<a href="{dashboard_url}" target="_blank" class="custom-button">🎮 Volver a tu Dashboard</a>', unsafe_allow_html=True)
+                    st.markdown(f"""
+                        <style>
+                            .custom-button {{
+                                display: inline-block;
+                                padding: 10px 20px;
+                                background-color: #6c63ff;
+                                color: white;
+                                border-radius: 6px;
+                                text-decoration: none;
+                                font-weight: bold;
+                                transition: background-color 0.3s;
+                            }}
+                            .custom-button:hover {{
+                                background-color: #5548d8;
+                            }}
+                        </style>
+                        <a href="{dashboard_url}" target="_blank" class="custom-button">🎮 Volver a tu Dashboard</a>
+                    """, unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"❌ Error al cargar o guardar los datos: {e}")
