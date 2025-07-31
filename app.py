@@ -71,17 +71,18 @@ if email:
             setup_ws = ss.worksheet("Setup")
 
             # Cargar BBDD
-            values = bbdd_ws.get(f"A1:E{bbdd_ws.row_count}")
+            values = bbdd_ws.get(f"A1:H{bbdd_ws.row_count}")
             headers, rows = values[0], values[1:]
             df_actual = pd.DataFrame(rows, columns=headers)
+            df_visible = df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]]
 
             st.markdown("## 🧾 Tu tabla de tasks")
             st.markdown("> Revisa tus tasks y edítalas o elimínalas para que se ajusten a tus objetivos.")
 
-            df_editado = st.data_editor(df_actual, num_rows="dynamic", use_container_width=True)
+            df_editado = st.data_editor(df_visible, num_rows="dynamic", use_container_width=True)
 
             if st.button("✅ Confirmar edición"):
-                hash_original = generar_hash_bbdd(df_actual)
+                hash_original = generar_hash_bbdd(df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
                 hash_nuevo = generar_hash_bbdd(df_editado)
 
                 if hash_original == hash_nuevo:
@@ -106,7 +107,7 @@ if email:
                                 fila_data = fila.iloc[0]
                                 nuevas_filas.append([
                                     timestamp,
-                                    fila_data["Pilar"],
+                                    fila_data["Pilares"],
                                     fila_data["Rasgo"],
                                     fila_data["Stats"],
                                     fila_data["Tasks"],
