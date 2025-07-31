@@ -124,6 +124,30 @@ if email_input:
 
                                 enviar_formulario_bobo(email_input)
                                 st.success("✅ Estamos configurando tu Daily Quest")
+                                
+                                dashboard_url = f"https://charlybonet.github.io/dashboard.html?email={email_input.strip()}"
+                                st.markdown(f"""
+                                <style>
+                                .custom-button {{
+                                  background-color: #7e3ff2;
+                                  color: white;
+                                  padding: 12px 24px;
+                                  border: none;
+                                  border-radius: 8px;
+                                  text-decoration: none;
+                                  font-weight: bold;
+                                  display: inline-block;
+                                  margin-top: 20px;
+                                }}
+                                .custom-button:hover {{
+                                  background-color: #5e2bbd;
+                                }}
+                                </style>
+                                
+                                <a href="{dashboard_url}" target="_blank" class="custom-button">
+                                🎮 Ir a tu Dashboard
+                                </a>
+                                """, unsafe_allow_html=True)
                                 encontrado = True
                                 break
 
