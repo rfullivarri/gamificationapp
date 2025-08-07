@@ -87,33 +87,39 @@ if email:
             if st.button("✅ Confirmar cambios"):
                 hash_original = generar_hash_bbdd(df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
                 hash_nuevo = generar_hash_bbdd(df_editado)
-
+            
                 if hash_original == hash_nuevo:
                     setup_ws.update_acell("E14", "constante")
                     st.success("✅ No hubo cambios. Tu base sigue igual.")
                 else:
-                    setup_ws.update_acell("E14", "modificada")
+                    # 🔍 Leer el valor previo de E14
+                    estado_actual = setup_ws.acell("E14").value
+            
+                    # 🧠 Decidir si es primera vez o modificación real
+                    nuevo_estado = "primera" if not estado_actual or estado_actual.strip() == "" else "modificada"
+                    setup_ws.update_acell("E14", nuevo_estado)
+            
+                    # 👇 El resto queda igual
                     tareas_anteriores = set(df_actual["Tasks"])
                     tareas_nuevas = set(df_editado["Tasks"])
                     tareas_logradas = tareas_anteriores - tareas_nuevas
-
+            
                     if tareas_logradas:
                         habitos_ws = ss.worksheet("Habitos Logrados")
                         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         columnas = df_actual.columns.tolist()
                         nuevas_filas = []
+            
                         for tarea in tareas_logradas:
                             fila = df_actual[df_actual["Tasks"] == tarea]
                             if not fila.empty:
                                 fila_data = fila.iloc[0]
-                    
-                                # ✅ Asegurar que XP es número entero, sin comillas
                                 xp = fila_data["EXP"] if "EXP" in columnas else 0
                                 try:
-                                    xp = int(float(xp))  # Convierte incluso si viene como "11.0"
+                                    xp = int(float(xp))
                                 except:
                                     xp = 0
-                    
+            
                                 nuevas_filas.append([
                                     timestamp,
                                     fila_data["Pilares"],
