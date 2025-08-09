@@ -48,23 +48,24 @@ def generar_hash_bbdd(df):
     raw = df.astype(str).apply(lambda x: ''.join(x), axis=1).sum()
     return hashlib.md5(raw.encode()).hexdigest()
 
-# catálogos
+# -------- catálogos globales --------
 PILARES_OPTS = ["Body", "Mind", "Soul"]
 DIFICULTAD_OPTS = ["Fácil", "Media", "Difícil"]
 
-RASGOS_BODY = ["Energía","Nutrición","Sueño","Recuperación","Hidratación",
-               "Higiene","Vitalidad","Postura","Movilidad","Moderación"]
-RASGOS_MIND = ["Enfoque","Aprendizaje","Creatividad","Gestión","Autocontrol",
-               "Resiliencia","Orden","Proyección","Finanzas","Agilidad"]
-RASGOS_SOUL = ["Conexión","Espiritualidad","Propósito","Valores","Altruismo",
-               "Insight","Gratitud","Naturaleza","Gozo","Autoestima"]
+RASGOS_POR_PILAR = {
+    "Body": ["Energía","Nutrición","Sueño","Recuperación","Hidratación",
+             "Higiene","Vitalidad","Postura","Movilidad","Moderación"],
+    "Mind": ["Enfoque","Aprendizaje","Creatividad","Gestión","Autocontrol",
+             "Resiliencia","Orden","Proyección","Finanzas","Agilidad"],
+    "Soul": ["Conexión","Espiritualidad","Propósito","Valores","Altruismo",
+             "Insight","Gratitud","Naturaleza","Gozo","Autoestima"],
+}
 
 def rasgos_combo():
-    return (
-        [f"{r}, Body" for r in RASGOS_BODY] +
-        [f"{r}, Mind" for r in RASGOS_MIND] +
-        [f"{r}, Soul" for r in RASGOS_SOUL]
-    )
+    out = []
+    for pilar, rasgos in RASGOS_POR_PILAR.items():
+        out += [f"{r}, {pilar}" for r in rasgos]
+    return out
 
 def clean_rasgo(val: str) -> str:
     s = (val or "").strip()
@@ -72,6 +73,7 @@ def clean_rasgo(val: str) -> str:
         return s.split(",")[0].strip()
     return s
 
+# -------- app --------
 email = st.text_input("📧 Ingresá tu correo electrónico para acceder a tu base de datos personalizada:")
 
 if email:
@@ -97,12 +99,16 @@ if email:
             # subset visible
             df_visible = df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]].copy()
 
-            # opciones para Rasgo:
-            #  - incluir TODOS los rasgos existentes (para que no aparezcan como None)
-            #  - más las opciones "Rasgo, Pilar"
+            # opciones que ya existen (para que no se vean celdas vacías)
+            pilares_existentes = sorted(set(df_visible["Pilares"].astype(str).str.strip()) - {""})
+            dificultad_existentes = sorted(set(df_visible["Dificultad"].astype(str).str.strip()) - {""})
             rasgos_existentes = sorted(set(df_visible["Rasgo"].astype(str).str.strip()) - {""})
+
+            PILAR_SELECT_OPTIONS = sorted(set(PILARES_OPTS + pilares_existentes))
+            DIFICULTAD_SELECT_OPTIONS = sorted(set(DIFICULTAD_OPTS + dificultad_existentes))
             RASGO_SELECT_OPTIONS = sorted(set(rasgos_existentes + rasgos_combo()))
 
+            # editor (UNICO)
             st.markdown("## 🧾 Tasks")
             st.caption("Revisa tus tasks y edítalas o elimínalas para que se ajusten a tus objetivos.")
 
@@ -112,28 +118,45 @@ if email:
                 use_container_width=True,
                 column_config={
                     "Pilares": st.column_config.SelectboxColumn(
-                        "Pilares", options=PILARES_OPTS, help="Elegí Body / Mind / Soul"
+                        "Pilares",
+                        options=PILAR_SELECT_OPTIONS,
+                        help="Elegí Body / Mind / Soul (se mantienen los valores existentes)."
                     ),
                     "Rasgo": st.column_config.SelectboxColumn(
                         "Rasgo",
                         options=RASGO_SELECT_OPTIONS,
-                        help="Podés elegir un rasgo existente o una opción 'Rasgo, Pilar'. Al guardar, se guardará sólo el Rasgo."
+                        help="Podés elegir un rasgo existente o 'Rasgo, Pilar'. Al guardar se quedará solo el Rasgo."
                     ),
                     "Dificultad": st.column_config.SelectboxColumn(
-                        "Dificultad", options=DIFICULTAD_OPTS
+                        "Dificultad",
+                        options=DIFICULTAD_SELECT_OPTIONS
                     ),
                 },
             )
 
             if st.button("✅ Confirmar cambios"):
-                # limpiar valores: si eligieron "Rasgo, Pilar", guardamos sólo el rasgo
+                # normalizaciones SOLO al guardar
                 df_guardar = df_editado.copy()
                 df_guardar["Rasgo"] = df_guardar["Rasgo"].apply(clean_rasgo)
-                df_guardar["Pilares"] = df_guardar["Pilares"].fillna("")
-                df_guardar["Stats"] = df_guardar["Stats"].fillna("")
-                df_guardar["Tasks"] = df_guardar["Tasks"].fillna("")
-                df_guardar["Dificultad"] = df_guardar["Dificultad"].fillna("")
 
+                _map_pilar = {
+                    "body":"Body","mind":"Mind","soul":"Soul",
+                    "cuerpo":"Body","mente":"Mind","alma":"Soul"
+                }
+                df_guardar["Pilares"] = df_guardar["Pilares"].astype(str).apply(
+                    lambda v: _map_pilar.get(v.strip().lower(), v.strip())
+                )
+
+                _map_diff = {"facil":"Fácil","fácil":"Fácil","media":"Media","medio":"Media",
+                             "dificil":"Difícil","difícil":"Difícil"}
+                df_guardar["Dificultad"] = df_guardar["Dificultad"].astype(str).apply(
+                    lambda v: _map_diff.get(v.strip().lower(), v.strip())
+                )
+
+                df_guardar[["Pilares","Rasgo","Stats","Tasks","Dificultad"]] = \
+                    df_guardar[["Pilares","Rasgo","Stats","Tasks","Dificultad"]].fillna("")
+
+                # detectar cambios
                 hash_original = generar_hash_bbdd(df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
                 hash_nuevo = generar_hash_bbdd(df_guardar)
 
@@ -176,14 +199,10 @@ if email:
                         if nuevas_filas:
                             habitos_ws.append_rows(nuevas_filas)
 
-                    # -------- guardar BBDD (solo A:E) --------
+                    # guardar BBDD (solo A:E)
                     df_guardar = df_guardar.fillna("")
-                    num_filas = len(df_guardar)
-                    if num_filas == 0:
-                        # limpiar si quedó vacío
-                        bbdd_ws.batch_clear([f"A2:E{bbdd_ws.row_count}"])
-                    else:
-                        bbdd_ws.batch_clear([f"A2:E{bbdd_ws.row_count}"])
+                    bbdd_ws.batch_clear([f"A2:E{bbdd_ws.row_count}"])
+                    if len(df_guardar) > 0:
                         bbdd_ws.update("A1:E1", [["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
                         bbdd_ws.update("A2", df_guardar.values.tolist())
 
@@ -204,7 +223,7 @@ if email:
             with col2:
                 st.markdown(f"""
                 <div style="text-align: center;">
-                    <a href="{dashboard_url}" target="_blank" style="
+                    <a href="{dashboard_url}" style="
                         display: inline-block;
                         padding: 8px 18px;
                         background-color: #6c63ff;
