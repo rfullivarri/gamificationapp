@@ -8,53 +8,16 @@ import hashlib
 import requests
 from gspread.utils import rowcol_to_a1
 
-# ---------------------------
-# Catálogos (dropdowns)
-# ---------------------------
-PILARES = ["Body", "Mind", "Soul"]
-DIFICULTADES = ["Fácil", "Media", "Difícil"]
-
-RASGOS_POR_PILAR = {
-    "Body": ["Energía","Nutrición","Sueño","Recuperación","Hidratación","Higiene","Vitalidad","Postura","Movilidad","Moderación"],
-    "Mind": ["Enfoque","Aprendizaje","Creatividad","Gestión","Autocontrol","Resiliencia","Orden","Proyección","Finanzas","Agilidad"],
-    "Soul": ["Conexión","Espiritualidad","Propósito","Valores","Altruismo","Insight","Gratitud","Naturaleza","Gozo","Autoestima"],
-}
-
-# Opciones para ver en el dropdown de Rasgo: "Rasgo, Pilar"
-RASGO_COMBO_OPTS = (
-    [f"{r}, Body" for r in RASGOS_POR_PILAR["Body"]] +
-    [f"{r}, Mind" for r in RASGOS_POR_PILAR["Mind"]] +
-    [f"{r}, Soul" for r in RASGOS_POR_PILAR["Soul"]]
-)
-
-def rasgo_to_combo(rasgo, pilar):
-    """Convierte (rasgo, pilar) -> 'Rasgo, Pilar' si es válido; si no, cadena vacía."""
-    if pilar in RASGOS_POR_PILAR and rasgo in RASGOS_POR_PILAR[pilar]:
-        return f"{rasgo}, {pilar}"
-    return ""
-
-def combo_to_parts(combo):
-    """'Rasgo, Pilar' -> ('Rasgo','Pilar'); soporta vacío."""
-    parts = [p.strip() for p in str(combo or "").split(",")]
-    if len(parts) >= 2:
-        return parts[0], parts[1]
-    return (str(combo or "").strip(), None)
-
-# ---------------------------
-# Simular envío al formulario BOBO
-# ---------------------------
+# -------- util BOBO --------
 def enviar_formulario_bobo():
     url_formulario = "https://docs.google.com/forms/d/e/1FAIpQLScS9L8mDIa934tEhkmnq0O7LhVat-9mrL6O6GOec-7JlK7tXQ/formResponse"
     data = {"entry.1871872872": "Sí"}
-    response = requests.post(url_formulario, data=data)
-    if response.status_code in [200, 302]:
-        print("✅ Formulario BOBO enviado correctamente.")
-    else:
-        print(f"❌ Error al enviar formulario BOBO: {response.status_code}")
+    try:
+        requests.post(url_formulario, data=data, timeout=10)
+    except Exception:
+        pass
 
-# ---------------------------
-# Config general UI
-# ---------------------------
+# -------- UI --------
 st.set_page_config(page_title="Gamification Dashboard", layout="wide")
 st.title("🪄 Conf BBDD & Daily Quest")
 
@@ -76,23 +39,39 @@ st.markdown('''
 </div>
 ''', unsafe_allow_html=True)
 
-# ---------------------------
-# Autenticación
-# ---------------------------
+# -------- auth --------
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["google_service_account"], scope)
 client = gspread.authorize(credentials)
 
-# ---------------------------
-# Hash helper
-# ---------------------------
 def generar_hash_bbdd(df):
     raw = df.astype(str).apply(lambda x: ''.join(x), axis=1).sum()
     return hashlib.md5(raw.encode()).hexdigest()
 
-# ---------------------------
-# Entrada de usuario
-# ---------------------------
+# catálogos
+PILARES_OPTS = ["Body", "Mind", "Soul"]
+DIFICULTAD_OPTS = ["Fácil", "Media", "Difícil"]
+
+RASGOS_BODY = ["Energía","Nutrición","Sueño","Recuperación","Hidratación",
+               "Higiene","Vitalidad","Postura","Movilidad","Moderación"]
+RASGOS_MIND = ["Enfoque","Aprendizaje","Creatividad","Gestión","Autocontrol",
+               "Resiliencia","Orden","Proyección","Finanzas","Agilidad"]
+RASGOS_SOUL = ["Conexión","Espiritualidad","Propósito","Valores","Altruismo",
+               "Insight","Gratitud","Naturaleza","Gozo","Autoestima"]
+
+def rasgos_combo():
+    return (
+        [f"{r}, Body" for r in RASGOS_BODY] +
+        [f"{r}, Mind" for r in RASGOS_MIND] +
+        [f"{r}, Soul" for r in RASGOS_SOUL]
+    )
+
+def clean_rasgo(val: str) -> str:
+    s = (val or "").strip()
+    if "," in s:
+        return s.split(",")[0].strip()
+    return s
+
 email = st.text_input("📧 Ingresá tu correo electrónico para acceder a tu base de datos personalizada:")
 
 if email:
@@ -110,24 +89,22 @@ if email:
             bbdd_ws = ss.worksheet("BBDD")
             setup_ws = ss.worksheet("Setup")
 
-            # Cargar BBDD (A..H por compatibilidad, usamos A..E)
+            # -------- leer BBDD --------
             values = bbdd_ws.get(f"A1:H{bbdd_ws.row_count}")
             headers, rows = values[0], values[1:]
-            df_actual = pd.DataFrame(rows, columns=headers)
+            df_actual = pd.DataFrame(rows, columns=headers).fillna("")
 
-            # --- Vista editable (solo columnas A..E) ---
+            # subset visible
             df_visible = df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]].copy()
 
-            # Normalizar con catálogos por si hay valores raros
-            df_visible["Pilares"] = df_visible["Pilares"].where(df_visible["Pilares"].isin(PILARES), "Body")
-            df_visible["Dificultad"] = df_visible["Dificultad"].where(df_visible["Dificultad"].isin(DIFICULTADES), "Fácil")
-            # Rasgo mostrado como "Rasgo, Pilar"
-            df_visible["Rasgo"] = [
-                rasgo_to_combo(r, p) for r, p in zip(df_visible["Rasgo"], df_visible["Pilares"])
-            ]
+            # opciones para Rasgo:
+            #  - incluir TODOS los rasgos existentes (para que no aparezcan como None)
+            #  - más las opciones "Rasgo, Pilar"
+            rasgos_existentes = sorted(set(df_visible["Rasgo"].astype(str).str.strip()) - {""})
+            RASGO_SELECT_OPTIONS = sorted(set(rasgos_existentes + rasgos_combo()))
 
             st.markdown("## 🧾 Tasks")
-            st.markdown("> Revisa tus tasks y edítalas o elimínalas para que se ajusten a tus objetivos.")
+            st.caption("Revisa tus tasks y edítalas o elimínalas para que se ajusten a tus objetivos.")
 
             df_editado = st.data_editor(
                 df_visible,
@@ -135,48 +112,28 @@ if email:
                 use_container_width=True,
                 column_config={
                     "Pilares": st.column_config.SelectboxColumn(
-                        "Pilares", options=PILARES, help="Elegí Body / Mind / Soul", width="small"
+                        "Pilares", options=PILARES_OPTS, help="Elegí Body / Mind / Soul"
                     ),
                     "Rasgo": st.column_config.SelectboxColumn(
-                        "Rasgo", options=RASGO_COMBO_OPTS,
-                        help="Elegí el rasgo (se muestra con su pilar). Al guardar queda solo el nombre del rasgo.",
-                        width="medium"
+                        "Rasgo",
+                        options=RASGO_SELECT_OPTIONS,
+                        help="Podés elegir un rasgo existente o una opción 'Rasgo, Pilar'. Al guardar, se guardará sólo el Rasgo."
                     ),
-                    "Stats": st.column_config.TextColumn("Stats"),
-                    "Tasks": st.column_config.TextColumn("Tasks", help="Describe acciones concretas y medibles"),
                     "Dificultad": st.column_config.SelectboxColumn(
-                        "Dificultad", options=DIFICULTADES, width="small"
+                        "Dificultad", options=DIFICULTAD_OPTS
                     ),
-                }
+                },
             )
 
             if st.button("✅ Confirmar cambios"):
-                # 1) Validar coherencia Rasgo↔Pilar y convertir "Rasgo, Pilar" -> "Rasgo"
-                errores = []
+                # limpiar valores: si eligieron "Rasgo, Pilar", guardamos sólo el rasgo
                 df_guardar = df_editado.copy()
+                df_guardar["Rasgo"] = df_guardar["Rasgo"].apply(clean_rasgo)
+                df_guardar["Pilares"] = df_guardar["Pilares"].fillna("")
+                df_guardar["Stats"] = df_guardar["Stats"].fillna("")
+                df_guardar["Tasks"] = df_guardar["Tasks"].fillna("")
+                df_guardar["Dificultad"] = df_guardar["Dificultad"].fillna("")
 
-                for i, row in df_guardar.reset_index(drop=True).iterrows():
-                    pilar = (row["Pilares"] or "").strip()
-                    rasgo_txt, p_de_combo = combo_to_parts(row["Rasgo"])
-
-                    if not rasgo_txt or not p_de_combo:
-                        errores.append(f"Fila {i+1}: Elegí un rasgo desde la lista.")
-                        continue
-                    if pilar != p_de_combo:
-                        errores.append(f"Fila {i+1}: El rasgo elegido pertenece a {p_de_combo}, pero la fila tiene Pilar {pilar}.")
-                        continue
-                    if rasgo_txt not in RASGOS_POR_PILAR.get(pilar, []):
-                        errores.append(f"Fila {i+1}: '{rasgo_txt}' no corresponde al pilar {pilar}.")
-                        continue
-
-                    # Dejar SOLO el nombre del rasgo para guardar
-                    df_guardar.at[i, "Rasgo"] = rasgo_txt
-
-                if errores:
-                    st.error("⚠️ Corregí antes de guardar:\n\n- " + "\n- ".join(errores))
-                    st.stop()
-
-                # 2) Comparar hashes (A..E) y decidir
                 hash_original = generar_hash_bbdd(df_actual[["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
                 hash_nuevo = generar_hash_bbdd(df_guardar)
 
@@ -184,22 +141,20 @@ if email:
                     setup_ws.update_acell("E14", "constante")
                     st.success("✅ No hubo cambios. Tu base sigue igual.")
                 else:
-                    # Estado en Setup!E14
-                    estado_actual = setup_ws.acell("E14").value
-                    nuevo_estado = "primera" if not estado_actual or estado_actual.strip() == "" else "modificada"
+                    estado_actual = (setup_ws.acell("E14").value or "").strip()
+                    nuevo_estado = "primera" if estado_actual == "" else "modificada"
                     setup_ws.update_acell("E14", nuevo_estado)
 
-                    # Log de hábitos logrados (tasks removidas)
+                    # hábitos logrados (tasks removidas)
                     tareas_anteriores = set(df_actual["Tasks"])
                     tareas_nuevas = set(df_guardar["Tasks"])
-                    tareas_logradas = tareas_anteriores - tareas_nuevas
+                    tareas_logradas = [t for t in tareas_anteriores - tareas_nuevas if t]
 
                     if tareas_logradas:
                         habitos_ws = ss.worksheet("Habitos Logrados")
                         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         columnas = df_actual.columns.tolist()
                         nuevas_filas = []
-
                         for tarea in tareas_logradas:
                             fila = df_actual[df_actual["Tasks"] == tarea]
                             if not fila.empty:
@@ -207,9 +162,8 @@ if email:
                                 xp = fila_data["EXP"] if "EXP" in columnas else 0
                                 try:
                                     xp = int(float(xp))
-                                except:
+                                except Exception:
                                     xp = 0
-
                                 nuevas_filas.append([
                                     timestamp,
                                     fila_data["Pilares"],
@@ -222,14 +176,18 @@ if email:
                         if nuevas_filas:
                             habitos_ws.append_rows(nuevas_filas)
 
-                    # 3) Guardar SOLO columnas A..E en BBDD con df_guardar
-                    num_filas = bbdd_ws.row_count
-                    rango_a_e = f"A2:E{num_filas}"
-                    bbdd_ws.batch_clear([rango_a_e])
-                    bbdd_ws.update("A1:E1", [["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
-                    bbdd_ws.update("A2", df_guardar.values.tolist())
+                    # -------- guardar BBDD (solo A:E) --------
+                    df_guardar = df_guardar.fillna("")
+                    num_filas = len(df_guardar)
+                    if num_filas == 0:
+                        # limpiar si quedó vacío
+                        bbdd_ws.batch_clear([f"A2:E{bbdd_ws.row_count}"])
+                    else:
+                        bbdd_ws.batch_clear([f"A2:E{bbdd_ws.row_count}"])
+                        bbdd_ws.update("A1:E1", [["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
+                        bbdd_ws.update("A2", df_guardar.values.tolist())
 
-                    # 4) Confirmar en registros y lanzar BOBO
+                    # marcar en registros + webhook BOBO
                     for idx, fila in enumerate(registros, start=2):
                         if fila["Email"].strip().lower() == email.strip().lower():
                             registros_ws.update_cell(idx, 6, "SI")
@@ -239,7 +197,7 @@ if email:
                     enviar_formulario_bobo()
                     st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
 
-            # Botón "Volver al Dashboard" centrado
+            # botón volver
             dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboardv3.html?email={email.strip()}"
             st.markdown("<br>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns([1, 0.5, 1])
@@ -256,8 +214,7 @@ if email:
                         font-weight: bold;
                         transition: background-color 0.3s;
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        font-size: 14px;
-                    ">
+                        font-size: 14px;">
                         🎮 Volver a tu Dashboard
                     </a>
                 </div>
