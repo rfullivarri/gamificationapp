@@ -148,7 +148,7 @@ if email:
                     enviar_formulario_bobo()
                     st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
             # Botón "Volver al Dashboard" centrado como el de Confirmar edición
-            dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboardv2.html?email={email.strip()}"
+            dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboardv3.html?email={email.strip()}"
             st.markdown("<br>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns([1, 0.5, 1])
             with col2:
