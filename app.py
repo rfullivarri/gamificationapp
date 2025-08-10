@@ -199,13 +199,22 @@ if email:
                         if nuevas_filas:
                             habitos_ws.append_rows(nuevas_filas)
 
-                    # guardar BBDD (solo A:E)
-                    df_guardar = df_guardar.fillna("")
+                    # guardar BBDD (solo A:E) — PEGADO SEGURO
+                    df_out = df_guardar[["Pilares","Rasgo","Stats","Tasks","Dificultad"]].fillna("")
+                    n_rows = len(df_out)
+                    
+                    # 1) limpiar SOLO A2:E (sin tocar fórmulas de F en adelante)
+                    #    limpiamos hasta la última fila de la hoja para borrar restos antiguos en A:E
                     bbdd_ws.batch_clear([f"A2:E{bbdd_ws.row_count}"])
-                    if len(df_guardar) > 0:
-                        bbdd_ws.update("A1:E1", [["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
-                        bbdd_ws.update("A2", df_guardar.values.tolist())
-
+                    
+                    # 2) reponer header por las dudas (no afecta nada a la derecha)
+                    bbdd_ws.update("A1:E1", [["Pilares", "Rasgo", "Stats", "Tasks", "Dificultad"]])
+                    
+                    # 3) pegar EXACTO en A2:E{end}, sin redimensionar la hoja
+                    if n_rows > 0:
+                        end_row = 1 + n_rows  # fila final (incluye header en 1)
+                        bbdd_ws.update(f"A2:E{end_row}", df_out.values.tolist())
+                        
                     # marcar en registros + webhook BOBO
                     for idx, fila in enumerate(registros, start=2):
                         if fila["Email"].strip().lower() == email.strip().lower():
@@ -216,14 +225,14 @@ if email:
                     enviar_formulario_bobo()
                     st.success("✅ Cambios confirmados. ¡Estamos configurando tu Daily Quest!")
 
-            # botón volver
+            # botón volver (misma pestaña con estilo original)
             dashboard_url = f"https://rfullivarri.github.io/gamificationweblanding/dashboardv3.html?email={email.strip()}"
             st.markdown("<br>", unsafe_allow_html=True)
             col1, col2, col3 = st.columns([1, 0.5, 1])
             with col2:
                 st.markdown(f"""
                 <div style="text-align: center;">
-                    <a href="{dashboard_url}" style="
+                    <a href="{dashboard_url}" onclick="window.location.href='{dashboard_url}'; return false;" style="
                         display: inline-block;
                         padding: 8px 18px;
                         background-color: #6c63ff;
