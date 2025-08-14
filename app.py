@@ -63,8 +63,8 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 
 # ===== NUEVO: email por querystring (sin input) =====
-params = st.experimental_get_query_params()
-email = (params.get("email", [""])[0] or "").strip().lower()
+qp = st.query_params  # nuevo API
+email = (qp.get("email", "") or "").strip().lower()  # ya devuelve string
 if not email:
     st.warning("No se detectó tu email. Abrí esta página desde el Dashboard (menú → **Editar Base**).")
     st.stop()
